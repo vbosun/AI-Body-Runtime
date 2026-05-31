@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/ai-body-runtime/body_intent.schema.json",
+  "title": "BodyCommand",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "intent"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup"],
+          "default": "idle"
+        },
+        "expression": {
+          "type": "string",
+          "enum": ["neutral", "smile", "surprised"],
+          "default": "neutral"
+        },
+        "prop": {
+          "type": "string",
+          "enum": ["none", "cup"],
+          "default": "none"
+        },
+        "gaze": {
+          "type": "string",
+          "enum": ["none", "look_at_user"],
+          "default": "none"
+        },
+        "camera": {
+          "type": "string",
+          "enum": ["front_medium", "front_full", "close_face"],
+          "default": "front_medium"
+        },
+        "screenshot": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}
+

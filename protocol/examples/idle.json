@@ -1,0 +1,12 @@
+{
+  "id": "cmd_idle_001",
+  "intent": {
+    "action": "idle",
+    "expression": "neutral",
+    "prop": "none",
+    "gaze": "none",
+    "camera": "front_medium",
+    "screenshot": true
+  }
+}
+

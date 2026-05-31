@@ -1,0 +1,219 @@
+[gd_scene load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://scripts/body_runtime.gd" id="1_body_runtime"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_horizon_color = Color(0.78, 0.8, 0.84, 1)
+ground_horizon_color = Color(0.7, 0.72, 0.76, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 2
+ambient_light_color = Color(0.78, 0.8, 0.84, 1)
+ambient_light_energy = 0.55
+
+[sub_resource type="StandardMaterial3D" id="Mat_Floor"]
+albedo_color = Color(0.54, 0.56, 0.58, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="Mat_Body"]
+albedo_color = Color(0.28, 0.44, 0.68, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Mat_Head"]
+albedo_color = Color(0.86, 0.72, 0.6, 1)
+roughness = 0.65
+
+[sub_resource type="StandardMaterial3D" id="Mat_Arm"]
+albedo_color = Color(0.22, 0.36, 0.58, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wood"]
+albedo_color = Color(0.46, 0.32, 0.2, 1)
+roughness = 0.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_Cup"]
+albedo_color = Color(0.92, 0.93, 0.9, 1)
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="Mesh_Floor"]
+size = Vector3(8, 0.1, 8)
+
+[sub_resource type="BoxMesh" id="Mesh_Body"]
+size = Vector3(0.7, 1.2, 0.35)
+
+[sub_resource type="SphereMesh" id="Mesh_Head"]
+radius = 0.32
+height = 0.64
+
+[sub_resource type="BoxMesh" id="Mesh_Arm"]
+size = Vector3(0.18, 0.9, 0.18)
+
+[sub_resource type="BoxMesh" id="Mesh_Leg"]
+size = Vector3(0.22, 0.9, 0.22)
+
+[sub_resource type="BoxMesh" id="Mesh_ChairSeat"]
+size = Vector3(1.0, 0.15, 0.95)
+
+[sub_resource type="BoxMesh" id="Mesh_ChairBack"]
+size = Vector3(1.0, 1.0, 0.15)
+
+[sub_resource type="BoxMesh" id="Mesh_ChairLeg"]
+size = Vector3(0.12, 0.8, 0.12)
+
+[sub_resource type="BoxMesh" id="Mesh_TableTop"]
+size = Vector3(1.6, 0.12, 1.0)
+
+[sub_resource type="BoxMesh" id="Mesh_TableLeg"]
+size = Vector3(0.1, 0.8, 0.1)
+
+[sub_resource type="CylinderMesh" id="Mesh_Cup"]
+top_radius = 0.16
+bottom_radius = 0.13
+height = 0.32
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_body_runtime")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="TestRoom" type="Node3D" parent="."]
+
+[node name="Floor" type="MeshInstance3D" parent="TestRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+mesh = SubResource("Mesh_Floor")
+surface_material_override/0 = SubResource("Mat_Floor")
+
+[node name="Chair" type="Node3D" parent="TestRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35, 0, 0.55)
+
+[node name="Seat" type="MeshInstance3D" parent="TestRoom/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, 0)
+mesh = SubResource("Mesh_ChairSeat")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="Back" type="MeshInstance3D" parent="TestRoom/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.34, 0.47)
+mesh = SubResource("Mesh_ChairBack")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegFL" type="MeshInstance3D" parent="TestRoom/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.4, -0.35)
+mesh = SubResource("Mesh_ChairLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegFR" type="MeshInstance3D" parent="TestRoom/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.4, -0.35)
+mesh = SubResource("Mesh_ChairLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegBL" type="MeshInstance3D" parent="TestRoom/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.4, 0.35)
+mesh = SubResource("Mesh_ChairLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegBR" type="MeshInstance3D" parent="TestRoom/Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.4, 0.35)
+mesh = SubResource("Mesh_ChairLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="Table" type="Node3D" parent="TestRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0, 0.2)
+
+[node name="Top" type="MeshInstance3D" parent="TestRoom/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, 0)
+mesh = SubResource("Mesh_TableTop")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegFL" type="MeshInstance3D" parent="TestRoom/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.65, 0.45, -0.4)
+mesh = SubResource("Mesh_TableLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegFR" type="MeshInstance3D" parent="TestRoom/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.45, -0.4)
+mesh = SubResource("Mesh_TableLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegBL" type="MeshInstance3D" parent="TestRoom/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.65, 0.45, 0.4)
+mesh = SubResource("Mesh_TableLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="LegBR" type="MeshInstance3D" parent="TestRoom/Table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.65, 0.45, 0.4)
+mesh = SubResource("Mesh_TableLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="Cup" type="MeshInstance3D" parent="TestRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.18, 1.16, 0.04)
+mesh = SubResource("Mesh_Cup")
+surface_material_override/0 = SubResource("Mat_Cup")
+
+[node name="UserAnchor" type="Marker3D" parent="TestRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -3.0)
+
+[node name="PlaceholderBody" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="BodyMesh" type="MeshInstance3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+mesh = SubResource("Mesh_Body")
+surface_material_override/0 = SubResource("Mat_Body")
+
+[node name="HeadMesh" type="MeshInstance3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.16, 0)
+mesh = SubResource("Mesh_Head")
+surface_material_override/0 = SubResource("Mat_Head")
+
+[node name="LeftArmMesh" type="MeshInstance3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 0.976296, -0.21644, 0, 0.21644, 0.976296, -0.55, 1.35, 0)
+mesh = SubResource("Mesh_Arm")
+surface_material_override/0 = SubResource("Mat_Arm")
+
+[node name="RightArmMesh" type="MeshInstance3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 0.976296, 0.21644, 0, -0.21644, 0.976296, 0.55, 1.35, 0)
+mesh = SubResource("Mesh_Arm")
+surface_material_override/0 = SubResource("Mat_Arm")
+
+[node name="LeftLegMesh" type="MeshInstance3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.45, 0)
+mesh = SubResource("Mesh_Leg")
+surface_material_override/0 = SubResource("Mat_Arm")
+
+[node name="RightLegMesh" type="MeshInstance3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.45, 0)
+mesh = SubResource("Mesh_Leg")
+surface_material_override/0 = SubResource("Mat_Arm")
+
+[node name="RightHandSocket" type="Marker3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 0.976296, 0.21644, 0, -0.21644, 0.976296, 0.55, 0.88, 0.1)
+
+[node name="HeadLookTarget" type="Marker3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.16, -1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="PlaceholderBody"]
+
+[node name="Cameras" type="Node3D" parent="."]
+
+[node name="FrontMedium" type="Camera3D" parent="Cameras"]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 1.55, 4.2)
+current = true
+fov = 50.0
+
+[node name="FrontFull" type="Camera3D" parent="Cameras"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 1.65, 5.8)
+fov = 54.0
+
+[node name="CloseFace" type="Camera3D" parent="Cameras"]
+transform = Transform3D(1, 0, 0, 0, 0.996195, 0.0871557, 0, -0.0871557, 0.996195, 0, 2.08, 2.05)
+fov = 35.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 0, 4, 0)
+light_energy = 2.5

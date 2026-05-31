@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local editor and agent metadata
+.codegraph/
+.cursor/
+
+# Godot local editor/import cache
+godot/.godot/
+godot/**/*.uid
+godot/**/*.import
+godot/runtime/inbox/*.json
+godot/runtime/outbox/*.json
+godot/outputs/screenshots/*.png
+godot/outputs/logs/*.jsonl

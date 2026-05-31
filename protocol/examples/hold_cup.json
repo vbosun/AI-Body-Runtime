@@ -1,0 +1,12 @@
+{
+  "id": "cmd_cup_001",
+  "intent": {
+    "action": "hold_cup",
+    "expression": "smile",
+    "prop": "cup",
+    "gaze": "look_at_user",
+    "camera": "front_medium",
+    "screenshot": true
+  }
+}
+

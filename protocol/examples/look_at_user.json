@@ -1,0 +1,12 @@
+{
+  "id": "cmd_look_001",
+  "intent": {
+    "action": "look_at_user",
+    "expression": "neutral",
+    "prop": "none",
+    "gaze": "look_at_user",
+    "camera": "close_face",
+    "screenshot": true
+  }
+}
+

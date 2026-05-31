@@ -1,0 +1,12 @@
+{
+  "id": "cmd_stand_001",
+  "intent": {
+    "action": "stand_up",
+    "expression": "neutral",
+    "prop": "none",
+    "gaze": "none",
+    "camera": "front_full",
+    "screenshot": true
+  }
+}
+

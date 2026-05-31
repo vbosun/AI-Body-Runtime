@@ -1,0 +1,12 @@
+{
+  "id": "cmd_wave_001",
+  "intent": {
+    "action": "wave",
+    "expression": "smile",
+    "prop": "none",
+    "gaze": "look_at_user",
+    "camera": "front_medium",
+    "screenshot": true
+  }
+}
+

@@ -1,0 +1,12 @@
+{
+  "id": "cmd_sit_001",
+  "intent": {
+    "action": "sit_chair",
+    "expression": "neutral",
+    "prop": "none",
+    "gaze": "look_at_user",
+    "camera": "front_full",
+    "screenshot": true
+  }
+}
+
