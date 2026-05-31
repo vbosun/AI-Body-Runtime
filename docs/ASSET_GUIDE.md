@@ -120,3 +120,17 @@ V0.3 does not implement:
 - physics
 - bone-level control
 - complex animation blending
+
+## Animation Naming
+
+V0.4 introduces an action slot adapter for real models. If the loaded GLB contains an `AnimationPlayer`, the runtime looks for animations with these exact names:
+
+- `idle`
+- `look_at_user`
+- `wave`
+- `sit_chair`
+- `stand_up`
+- `hold_cup`
+- `attach_prop`
+
+When an animation exists, BodyState reports `action_source: "animation"` and `animation_name` as the action name. When it does not exist, BodyState reports `action_source: "profile_fallback"` and `animation_name: "none"`.

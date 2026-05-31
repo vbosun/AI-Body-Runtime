@@ -91,6 +91,8 @@ var current_state := {
 	"pose": "standing",
 	"body_mode": "placeholder",
 	"action": "idle",
+	"action_source": "placeholder_transform",
+	"animation_name": "none",
 	"expression": "neutral",
 	"holding": "none",
 	"attached_prop": "none",
@@ -274,6 +276,15 @@ func _normalize_enum(intent: Dictionary, key: String, allowed: Array, fallback: 
 
 
 func _apply_action(action: String) -> void:
+	current_state["animation_name"] = "none"
+	if body_mode == "real_model":
+		await _apply_real_model_action(action)
+	else:
+		await _apply_placeholder_action(action)
+
+
+func _apply_placeholder_action(action: String) -> void:
+	current_state["action_source"] = "placeholder_transform"
 	match action:
 		"idle":
 			_reset_body_pose()
@@ -304,13 +315,70 @@ func _apply_action(action: String) -> void:
 			await get_tree().create_timer(0.2).timeout
 
 
+func _apply_real_model_action(action: String) -> void:
+	_reset_body_pose()
+	if _play_real_model_animation(action):
+		current_state["action_source"] = "animation"
+		current_state["animation_name"] = action
+		current_state["pose"] = _pose_for_action(action)
+		await get_tree().create_timer(0.25).timeout
+		return
+	current_state["action_source"] = "profile_fallback"
+	current_state["animation_name"] = "none"
+	_apply_real_model_profile_fallback(action)
+
+
+func _play_real_model_animation(action: String) -> bool:
+	return real_body.has_method("play_action_animation") and real_body.call("play_action_animation", action)
+
+
+func _apply_real_model_profile_fallback(action: String) -> void:
+	match action:
+		"idle":
+			current_state["pose"] = "standing"
+		"look_at_user":
+			current_state["pose"] = "looking_at_user"
+		"wave":
+			current_state["pose"] = "waving"
+		"sit_chair":
+			_sit_chair()
+			current_state["pose"] = "sitting"
+		"stand_up":
+			current_state["pose"] = "standing"
+		"hold_cup":
+			current_state["pose"] = "holding_cup"
+		"attach_prop":
+			current_state["pose"] = "attaching_prop"
+	await get_tree().create_timer(0.2).timeout
+
+
+func _pose_for_action(action: String) -> String:
+	match action:
+		"idle":
+			return "standing"
+		"look_at_user":
+			return "looking_at_user"
+		"wave":
+			return "waving"
+		"sit_chair":
+			return "sitting"
+		"stand_up":
+			return "standing"
+		"hold_cup":
+			return "holding_cup"
+		"attach_prop":
+			return "attaching_prop"
+	return "unknown"
+
+
 func _reset_body_pose() -> void:
 	body.transform = body_start_transform
-	head_mesh.transform = head_start_transform
-	left_arm.transform = left_arm_start_transform
-	right_arm.transform = right_arm_start_transform
-	left_leg.transform = left_leg_start_transform
-	right_leg.transform = right_leg_start_transform
+	if body_mode == "placeholder":
+		head_mesh.transform = head_start_transform
+		left_arm.transform = left_arm_start_transform
+		right_arm.transform = right_arm_start_transform
+		left_leg.transform = left_leg_start_transform
+		right_leg.transform = right_leg_start_transform
 
 
 func _wave() -> void:

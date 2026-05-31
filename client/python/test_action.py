@@ -61,6 +61,16 @@ TEST_INTENTS = [
             "camera": "front_full",
             "screenshot": True,
         },
+        "expect_by_body_mode": {
+            "placeholder": {
+                "action_source": "placeholder_transform",
+                "animation_name": "none",
+            },
+            "real_model": {
+                "action_source": "profile_fallback",
+                "animation_name": "none",
+            },
+        },
     },
     {
         "id": "cmd_stand_001",
@@ -193,6 +203,20 @@ def main() -> int:
             if screenshot_path and not (args.project_dir / screenshot_path).exists():
                 print(f"Missing screenshot: {screenshot_path}", file=sys.stderr)
                 return 1
+            body_mode = state["state"].get("body_mode")
+            if "action_source" not in state["state"] or "animation_name" not in state["state"]:
+                print(f"Missing action adapter fields in state: {state}", file=sys.stderr)
+                return 1
+            mode_expectations = command.get("expect_by_body_mode", {}).get(body_mode, {})
+            for field_name, expected_value in mode_expectations.items():
+                actual = state["state"].get(field_name)
+                if actual != expected_value:
+                    print(
+                        f"Expected {field_name}={expected_value} for body_mode={body_mode}, got {actual}",
+                        file=sys.stderr,
+                    )
+                    print(state, file=sys.stderr)
+                    return 1
             expected_attachments = command.get("expect", {}).get("attachments", {})
             for socket_name, prop_name in expected_attachments.items():
                 actual = state["state"].get("attachments", {}).get(socket_name)

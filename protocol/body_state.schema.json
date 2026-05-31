@@ -20,6 +20,8 @@
         "pose",
         "body_mode",
         "action",
+        "action_source",
+        "animation_name",
         "expression",
         "holding",
         "attached_prop",
@@ -42,6 +44,14 @@
         "action": {
           "type": "string",
           "enum": ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup", "attach_prop"]
+        },
+        "action_source": {
+          "type": "string",
+          "enum": ["placeholder_transform", "animation", "profile_fallback"]
+        },
+        "animation_name": {
+          "type": "string",
+          "enum": ["none", "idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup", "attach_prop"]
         },
         "expression": {
           "type": "string",

@@ -164,3 +164,26 @@ The runtime uses an in-code body profile for each body mode. The real model prof
 - body scale, position, and rotation
 - `sit_chair` position and rotation
 - prop/socket offsets for `cup/right_hand` and `bucket/head`
+
+## Real Model Animation Naming
+
+V0.4 adds an action slot adapter. In `real_model` mode, the runtime first looks for an `AnimationPlayer` inside the loaded GLB scene and tries to play an animation with the same name as the BodyIntent action:
+
+- `idle`
+- `look_at_user`
+- `wave`
+- `sit_chair`
+- `stand_up`
+- `hold_cup`
+- `attach_prop`
+
+If no matching animation exists, the runtime uses the real model profile fallback and reports:
+
+```json
+{
+  "action_source": "profile_fallback",
+  "animation_name": "none"
+}
+```
+
+Placeholder mode continues to use primitive transforms and reports `action_source: "placeholder_transform"`.

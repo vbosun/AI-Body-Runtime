@@ -106,6 +106,8 @@ Example:
     "pose": "waving",
     "body_mode": "placeholder",
     "action": "wave",
+    "action_source": "placeholder_transform",
+    "animation_name": "none",
     "expression": "smile",
     "holding": "none",
     "attached_prop": "bucket",
