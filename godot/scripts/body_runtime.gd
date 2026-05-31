@@ -6,6 +6,7 @@ const PROPS := ["none", "cup"]
 const GAZES := ["none", "look_at_user"]
 const CAMERAS := ["front_medium", "front_full", "close_face"]
 
+# MVP uses res:// project-local files so command/state/screenshot artifacts are easy to inspect while debugging.
 const INBOX_PATH := "res://runtime/inbox/command.json"
 const OUTBOX_PATH := "res://runtime/outbox/state.json"
 const SCREENSHOT_DIR := "res://outputs/screenshots"
@@ -63,7 +64,7 @@ func _ready() -> void:
 	surprised_head_material = _make_material(Color(0.95, 0.86, 0.62, 1.0))
 	_configure_camera_presets()
 	_ensure_runtime_dirs()
-	_write_state_atomic("startup", true, "", [])
+	_write_state_atomic("startup", true, "", [], {}, {})
 	print("AI Body Runtime ready. Watching ", INBOX_PATH)
 
 
@@ -117,14 +118,14 @@ func _execute_command(command: Dictionary) -> void:
 
 	current_state["action"] = normalized["action"]
 	current_state["expression"] = normalized["expression"]
-	current_state["holding"] = "cup" if normalized["prop"] == "cup" or normalized["action"] == "hold_cup" else "none"
+	current_state["holding"] = "cup" if normalized["prop"] == "cup" else "none"
 	current_state["gaze"] = "user" if normalized["gaze"] == "look_at_user" or normalized["action"] == "look_at_user" else "none"
 	current_state["camera"] = normalized["camera"]
 	current_state["is_busy"] = false
 	current_state["last_action_status"] = "success" if errors.is_empty() else "invalid_intent"
 	is_busy = false
 
-	_write_state_atomic(id, errors.is_empty(), screenshot_path, errors)
+	_write_state_atomic(id, errors.is_empty(), screenshot_path, errors, command, normalized)
 
 
 func _normalize_intent(intent: Dictionary, errors: Array[String]) -> Dictionary:
@@ -137,6 +138,8 @@ func _normalize_intent(intent: Dictionary, errors: Array[String]) -> Dictionary:
 	if typeof(screenshot) != TYPE_BOOL:
 		screenshot = false
 		errors.append("invalid_screenshot")
+	if action == "hold_cup":
+		prop = "cup"
 	return {
 		"action": action,
 		"expression": expression,
@@ -178,7 +181,6 @@ func _apply_action(action: String) -> void:
 			await get_tree().create_timer(0.25).timeout
 		"hold_cup":
 			_reset_body_pose()
-			_attach_cup_to_hand()
 			current_state["pose"] = "holding_cup"
 			await get_tree().create_timer(0.25).timeout
 
@@ -295,7 +297,7 @@ func _capture_screenshot(id: String, errors: Array[String]) -> String:
 	return final_rel
 
 
-func _write_state_atomic(id: String, ok: bool, screenshot_path: String, errors: Array) -> void:
+func _write_state_atomic(id: String, ok: bool, screenshot_path: String, errors: Array, command: Dictionary = {}, normalized_intent: Dictionary = {}) -> void:
 	var response := {
 		"id": id,
 		"ok": ok,
@@ -310,22 +312,22 @@ func _write_state_atomic(id: String, ok: bool, screenshot_path: String, errors: 
 	file.store_string(text)
 	file.close()
 	_rename_absolute(temp_abs, final_abs)
-	_append_log(response)
+	_append_log(response, command, normalized_intent)
 
 
 func _write_busy_state(id: String) -> void:
 	current_state["is_busy"] = true
 	current_state["last_action_status"] = "busy"
-	_write_state_atomic(id, false, "", ["runtime_busy"])
+	_write_state_atomic(id, false, "", ["runtime_busy"], {"id": id}, {})
 
 
 func _handle_invalid_command(id: String, errors: Array[String]) -> void:
 	current_state["is_busy"] = false
 	current_state["last_action_status"] = "invalid_intent"
-	_write_state_atomic(id, false, "", errors)
+	_write_state_atomic(id, false, "", errors, {"id": id}, {})
 
 
-func _append_log(response: Dictionary) -> void:
+func _append_log(response: Dictionary, command: Dictionary, normalized_intent: Dictionary) -> void:
 	var file := FileAccess.open(LOG_PATH, FileAccess.READ_WRITE)
 	if file == null:
 		file = FileAccess.open(LOG_PATH, FileAccess.WRITE)
@@ -333,6 +335,8 @@ func _append_log(response: Dictionary) -> void:
 		file.seek_end()
 	var entry := {
 		"time": Time.get_datetime_string_from_system(false, true),
+		"command": command,
+		"normalized_intent": normalized_intent,
 		"response": response
 	}
 	file.store_line(JSON.stringify(entry))

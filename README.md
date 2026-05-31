@@ -93,11 +93,30 @@ The Python test can launch Godot headless, send commands through file polling, w
 python client\python\test_action.py --launch-runtime
 ```
 
+Godot executable resolution order for `--launch-runtime`:
+
+1. `--godot-exe`
+2. `AI_BODY_RUNTIME_GODOT_EXE` environment variable
+3. `godot` or `godot4` on `PATH`
+4. the local Windows default path used during MVP development
+
+Examples:
+
+```powershell
+python client\python\test_action.py --launch-runtime --godot-exe "D:\Software\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64_console.exe"
+```
+
+```powershell
+$env:AI_BODY_RUNTIME_GODOT_EXE="D:\Software\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64_console.exe"
+python client\python\test_action.py --launch-runtime
+```
+
 Expected output includes:
 
 ```text
 cmd_idle_001: ok=True pose=standing
 cmd_wave_001: ok=True pose=waving
+cmd_look_001: ok=True pose=looking_at_user
 cmd_sit_001: ok=True pose=sitting
 cmd_stand_001: ok=True pose=standing
 cmd_cup_001: ok=True pose=holding_cup

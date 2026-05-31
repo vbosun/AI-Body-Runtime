@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import os
+import shutil
 import subprocess
 import sys
 import time
@@ -9,9 +11,10 @@ from pathlib import Path
 from body_client import BodyClient, default_project_dir
 
 
-GODOT_EXE = Path(
+DEFAULT_GODOT_EXE = Path(
     r"D:\Software\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64_console.exe"
 )
+GODOT_EXE_ENV = "AI_BODY_RUNTIME_GODOT_EXE"
 
 
 TEST_INTENTS = [
@@ -101,21 +104,42 @@ def clear_runtime_files(project_dir: Path) -> None:
             path.unlink()
 
 
+def resolve_godot_exe(cli_value: Path | None) -> Path:
+    if cli_value is not None:
+        return cli_value
+
+    env_value = os.environ.get(GODOT_EXE_ENV)
+    if env_value:
+        return Path(env_value)
+
+    path_value = shutil.which("godot") or shutil.which("godot4")
+    if path_value:
+        return Path(path_value)
+
+    return DEFAULT_GODOT_EXE
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run AI Body Runtime MVP action tests.")
     parser.add_argument("--project-dir", type=Path, default=default_project_dir())
-    parser.add_argument("--godot-exe", type=Path, default=GODOT_EXE)
+    parser.add_argument(
+        "--godot-exe",
+        type=Path,
+        default=None,
+        help=f"Godot executable path. Overrides {GODOT_EXE_ENV}; otherwise PATH and the local default are tried.",
+    )
     parser.add_argument("--launch-runtime", action="store_true")
     parser.add_argument("--timeout", type=float, default=15.0)
     args = parser.parse_args()
+    godot_exe = resolve_godot_exe(args.godot_exe)
     clear_runtime_files(args.project_dir)
 
     process: subprocess.Popen[str] | None = None
     if args.launch_runtime:
-        if not args.godot_exe.exists():
-            print(f"Godot executable not found: {args.godot_exe}", file=sys.stderr)
+        if not godot_exe.exists():
+            print(f"Godot executable not found: {godot_exe}", file=sys.stderr)
             return 2
-        process = launch_runtime(args.project_dir, args.godot_exe)
+        process = launch_runtime(args.project_dir, godot_exe)
         time.sleep(1.0)
 
     client = BodyClient(args.project_dir, timeout_seconds=args.timeout)
