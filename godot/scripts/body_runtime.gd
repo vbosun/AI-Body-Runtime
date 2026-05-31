@@ -1,10 +1,11 @@
 extends Node3D
 
-const ACTIONS := ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup"]
+const ACTIONS := ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup", "attach_prop"]
 const EXPRESSIONS := ["neutral", "smile", "surprised"]
-const PROPS := ["none", "cup"]
+const PROPS := ["none", "cup", "bucket"]
 const GAZES := ["none", "look_at_user"]
 const CAMERAS := ["front_medium", "front_full", "close_face"]
+const SOCKETS := ["right_hand", "left_hand", "head", "back", "waist"]
 
 # MVP uses res:// project-local files so command/state/screenshot artifacts are easy to inspect while debugging.
 const INBOX_PATH := "res://runtime/inbox/command.json"
@@ -20,7 +21,12 @@ const LOG_PATH := "res://outputs/logs/runtime.jsonl"
 @onready var left_leg: MeshInstance3D = $PlaceholderBody/LeftLegMesh
 @onready var right_leg: MeshInstance3D = $PlaceholderBody/RightLegMesh
 @onready var right_hand_socket: Marker3D = $PlaceholderBody/RightHandSocket
+@onready var left_hand_socket: Marker3D = $PlaceholderBody/LeftHandSocket
+@onready var head_socket: Marker3D = $PlaceholderBody/HeadSocket
+@onready var back_socket: Marker3D = $PlaceholderBody/BackSocket
+@onready var waist_socket: Marker3D = $PlaceholderBody/WaistSocket
 @onready var cup: MeshInstance3D = $TestRoom/Cup
+@onready var bucket: MeshInstance3D = $TestRoom/Bucket
 @onready var user_anchor: Marker3D = $TestRoom/UserAnchor
 @onready var front_medium_camera: Camera3D = $Cameras/FrontMedium
 @onready var front_full_camera: Camera3D = $Cameras/FrontFull
@@ -33,6 +39,15 @@ var current_state := {
 	"action": "idle",
 	"expression": "neutral",
 	"holding": "none",
+	"attached_prop": "none",
+	"target_socket": "none",
+	"attachments": {
+		"right_hand": "none",
+		"left_hand": "none",
+		"head": "none",
+		"back": "none",
+		"waist": "none"
+	},
 	"gaze": "none",
 	"camera": "front_medium",
 	"is_busy": false,
@@ -46,6 +61,7 @@ var right_arm_start_transform: Transform3D
 var left_leg_start_transform: Transform3D
 var right_leg_start_transform: Transform3D
 var cup_table_transform: Transform3D
+var bucket_start_transform: Transform3D
 var neutral_head_material: Material
 var smile_head_material: StandardMaterial3D
 var surprised_head_material: StandardMaterial3D
@@ -59,6 +75,7 @@ func _ready() -> void:
 	left_leg_start_transform = left_leg.transform
 	right_leg_start_transform = right_leg.transform
 	cup_table_transform = cup.transform
+	bucket_start_transform = bucket.transform
 	neutral_head_material = head_mesh.get_active_material(0)
 	smile_head_material = _make_material(Color(0.95, 0.76, 0.58, 1.0))
 	surprised_head_material = _make_material(Color(0.95, 0.86, 0.62, 1.0))
@@ -108,7 +125,7 @@ func _execute_command(command: Dictionary) -> void:
 	var normalized := _normalize_intent(intent, errors)
 	await _apply_action(normalized["action"])
 	_apply_expression(normalized["expression"])
-	_apply_prop(normalized["prop"])
+	_apply_prop(normalized["prop"], normalized["target_socket"])
 	_apply_gaze(normalized["gaze"])
 	_apply_camera(normalized["camera"])
 
@@ -118,7 +135,9 @@ func _execute_command(command: Dictionary) -> void:
 
 	current_state["action"] = normalized["action"]
 	current_state["expression"] = normalized["expression"]
-	current_state["holding"] = "cup" if normalized["prop"] == "cup" else "none"
+	current_state["holding"] = "cup" if current_state["attachments"]["right_hand"] == "cup" else "none"
+	current_state["attached_prop"] = normalized["prop"]
+	current_state["target_socket"] = normalized["target_socket"] if normalized["prop"] != "none" else "none"
 	current_state["gaze"] = "user" if normalized["gaze"] == "look_at_user" or normalized["action"] == "look_at_user" else "none"
 	current_state["camera"] = normalized["camera"]
 	current_state["is_busy"] = false
@@ -132,6 +151,7 @@ func _normalize_intent(intent: Dictionary, errors: Array[String]) -> Dictionary:
 	var action := _normalize_enum(intent, "action", ACTIONS, "idle", errors)
 	var expression := _normalize_enum(intent, "expression", EXPRESSIONS, "neutral", errors)
 	var prop := _normalize_enum(intent, "prop", PROPS, "none", errors)
+	var target_socket := _normalize_enum(intent, "target_socket", SOCKETS, "right_hand", errors)
 	var gaze := _normalize_enum(intent, "gaze", GAZES, "none", errors)
 	var camera := _normalize_enum(intent, "camera", CAMERAS, "front_medium", errors)
 	var screenshot = intent.get("screenshot", false)
@@ -140,10 +160,14 @@ func _normalize_intent(intent: Dictionary, errors: Array[String]) -> Dictionary:
 		errors.append("invalid_screenshot")
 	if action == "hold_cup":
 		prop = "cup"
+		target_socket = "right_hand"
+	if action == "attach_prop" and prop == "none":
+		errors.append("missing_prop")
 	return {
 		"action": action,
 		"expression": expression,
 		"prop": prop,
+		"target_socket": target_socket,
 		"gaze": gaze,
 		"camera": camera,
 		"screenshot": screenshot
@@ -183,6 +207,10 @@ func _apply_action(action: String) -> void:
 			_reset_body_pose()
 			current_state["pose"] = "holding_cup"
 			await get_tree().create_timer(0.25).timeout
+		"attach_prop":
+			_reset_body_pose()
+			current_state["pose"] = "attaching_prop"
+			await get_tree().create_timer(0.2).timeout
 
 
 func _reset_body_pose() -> void:
@@ -226,23 +254,90 @@ func _apply_expression(expression: String) -> void:
 			head_mesh.scale = Vector3(1.05, 1.08, 1.05)
 
 
-func _apply_prop(prop: String) -> void:
-	if prop == "cup":
-		_attach_cup_to_hand()
+func _apply_prop(prop: String, target_socket: String) -> void:
+	if prop == "none":
+		_restore_props_to_defaults()
 	else:
-		_restore_cup_to_table()
+		_attach_prop_to_socket(prop, target_socket)
 
 
-func _attach_cup_to_hand() -> void:
-	if cup.get_parent() != right_hand_socket:
-		cup.reparent(right_hand_socket, false)
-	cup.transform = Transform3D(Basis(), Vector3(0, -0.08, 0))
+func _attach_prop_to_socket(prop: String, socket_name: String) -> void:
+	var prop_node := _get_prop_node(prop)
+	var socket_node := _get_socket_node(socket_name)
+	if prop_node == null or socket_node == null:
+		return
+	_clear_prop_attachment(prop)
+	_clear_socket_attachment(socket_name)
+	if prop_node.get_parent() != socket_node:
+		prop_node.reparent(socket_node, false)
+	prop_node.transform = _get_prop_socket_offset(prop, socket_name)
+	current_state["attachments"][socket_name] = prop
+
+
+func _restore_props_to_defaults() -> void:
+	_restore_cup_to_table()
+	_restore_bucket_to_start()
 
 
 func _restore_cup_to_table() -> void:
 	if cup.get_parent() != $TestRoom:
 		cup.reparent($TestRoom, false)
 	cup.transform = cup_table_transform
+	_clear_prop_attachment("cup")
+
+
+func _restore_bucket_to_start() -> void:
+	if bucket.get_parent() != $TestRoom:
+		bucket.reparent($TestRoom, false)
+	bucket.transform = bucket_start_transform
+	_clear_prop_attachment("bucket")
+
+
+func _clear_prop_attachment(prop: String) -> void:
+	for socket_name in SOCKETS:
+		if current_state["attachments"][socket_name] == prop:
+			current_state["attachments"][socket_name] = "none"
+
+
+func _clear_socket_attachment(socket_name: String) -> void:
+	var attached_prop := str(current_state["attachments"][socket_name])
+	if attached_prop == "cup":
+		_restore_cup_to_table()
+	elif attached_prop == "bucket":
+		_restore_bucket_to_start()
+	current_state["attachments"][socket_name] = "none"
+
+
+func _get_prop_node(prop: String) -> Node3D:
+	match prop:
+		"cup":
+			return cup
+		"bucket":
+			return bucket
+	return null
+
+
+func _get_socket_node(socket_name: String) -> Marker3D:
+	match socket_name:
+		"right_hand":
+			return right_hand_socket
+		"left_hand":
+			return left_hand_socket
+		"head":
+			return head_socket
+		"back":
+			return back_socket
+		"waist":
+			return waist_socket
+	return null
+
+
+func _get_prop_socket_offset(prop: String, socket_name: String) -> Transform3D:
+	if prop == "bucket" and socket_name == "head":
+		return Transform3D(Basis(), Vector3(0, 0.12, 0))
+	if prop == "bucket":
+		return Transform3D(Basis(), Vector3(0, -0.05, 0))
+	return Transform3D(Basis(), Vector3(0, -0.08, 0))
 
 
 func _apply_gaze(gaze: String) -> void:

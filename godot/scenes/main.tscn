@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/body_runtime.gd" id="1_body_runtime"]
 
@@ -40,6 +40,10 @@ roughness = 0.8
 albedo_color = Color(0.92, 0.93, 0.9, 1)
 roughness = 0.45
 
+[sub_resource type="StandardMaterial3D" id="Mat_Bucket"]
+albedo_color = Color(0.48, 0.52, 0.56, 1)
+roughness = 0.55
+
 [sub_resource type="BoxMesh" id="Mesh_Floor"]
 size = Vector3(8, 0.1, 8)
 
@@ -75,6 +79,11 @@ size = Vector3(0.1, 0.8, 0.1)
 top_radius = 0.16
 bottom_radius = 0.13
 height = 0.32
+
+[sub_resource type="CylinderMesh" id="Mesh_Bucket"]
+top_radius = 0.42
+bottom_radius = 0.36
+height = 0.55
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_body_runtime")
@@ -155,6 +164,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.18, 1.16, 0.04)
 mesh = SubResource("Mesh_Cup")
 surface_material_override/0 = SubResource("Mat_Cup")
 
+[node name="Bucket" type="MeshInstance3D" parent="TestRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0.28, 0.55)
+mesh = SubResource("Mesh_Bucket")
+surface_material_override/0 = SubResource("Mat_Bucket")
+
 [node name="UserAnchor" type="Marker3D" parent="TestRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, -3.0)
 
@@ -193,6 +207,18 @@ surface_material_override/0 = SubResource("Mat_Arm")
 
 [node name="RightHandSocket" type="Marker3D" parent="PlaceholderBody"]
 transform = Transform3D(1, 0, 0, 0, 0.976296, 0.21644, 0, -0.21644, 0.976296, 0.55, 0.88, 0.1)
+
+[node name="LeftHandSocket" type="Marker3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 0.976296, -0.21644, 0, 0.21644, 0.976296, -0.55, 0.88, 0.1)
+
+[node name="HeadSocket" type="Marker3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.18, 0)
+
+[node name="BackSocket" type="Marker3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.24)
+
+[node name="WaistSocket" type="Marker3D" parent="PlaceholderBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0.22)
 
 [node name="HeadLookTarget" type="Marker3D" parent="PlaceholderBody"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.16, -1)

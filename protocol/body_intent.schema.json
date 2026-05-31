@@ -16,7 +16,7 @@
       "properties": {
         "action": {
           "type": "string",
-          "enum": ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup"],
+          "enum": ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup", "attach_prop"],
           "default": "idle"
         },
         "expression": {
@@ -26,8 +26,13 @@
         },
         "prop": {
           "type": "string",
-          "enum": ["none", "cup"],
+          "enum": ["none", "cup", "bucket"],
           "default": "none"
+        },
+        "target_socket": {
+          "type": "string",
+          "enum": ["right_hand", "left_hand", "head", "back", "waist"],
+          "default": "right_hand"
         },
         "gaze": {
           "type": "string",
@@ -47,4 +52,3 @@
     }
   }
 }
-

@@ -16,11 +16,12 @@ Example:
 {
   "id": "cmd_001",
   "intent": {
-    "action": "wave",
-    "expression": "smile",
-    "prop": "none",
+    "action": "attach_prop",
+    "expression": "surprised",
+    "prop": "bucket",
+    "target_socket": "head",
     "gaze": "look_at_user",
-    "camera": "front_medium",
+    "camera": "close_face",
     "screenshot": true
   }
 }
@@ -38,6 +39,7 @@ Allowed `action` values:
 - `sit_chair`
 - `stand_up`
 - `hold_cup`
+- `attach_prop`
 
 Example commands are available under `protocol/examples/`.
 
@@ -51,6 +53,27 @@ Allowed `prop` values:
 
 - `none`
 - `cup`
+- `bucket`
+
+Allowed `target_socket` values:
+
+- `right_hand`
+- `left_hand`
+- `head`
+- `back`
+- `waist`
+
+`hold_cup` is kept for MVP compatibility and normalizes to:
+
+```json
+{
+  "action": "hold_cup",
+  "prop": "cup",
+  "target_socket": "right_hand"
+}
+```
+
+`attach_prop` attaches the selected prop to the selected socket. For example, `prop: "bucket"` and `target_socket: "head"` simulates putting a bucket on the placeholder body's head.
 
 Allowed `gaze` values:
 
@@ -84,6 +107,15 @@ Example:
     "action": "wave",
     "expression": "smile",
     "holding": "none",
+    "attached_prop": "bucket",
+    "target_socket": "head",
+    "attachments": {
+      "right_hand": "none",
+      "left_hand": "none",
+      "head": "bucket",
+      "back": "none",
+      "waist": "none"
+    },
     "gaze": "user",
     "camera": "front_medium",
     "is_busy": false,

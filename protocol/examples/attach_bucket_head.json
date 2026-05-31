@@ -1,0 +1,13 @@
+{
+  "id": "cmd_attach_bucket_head_001",
+  "intent": {
+    "action": "attach_prop",
+    "expression": "surprised",
+    "prop": "bucket",
+    "target_socket": "head",
+    "gaze": "look_at_user",
+    "camera": "close_face",
+    "screenshot": true
+  }
+}
+

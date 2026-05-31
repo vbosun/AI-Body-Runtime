@@ -21,6 +21,9 @@
         "action",
         "expression",
         "holding",
+        "attached_prop",
+        "target_socket",
+        "attachments",
         "gaze",
         "camera",
         "is_busy",
@@ -29,11 +32,11 @@
       "properties": {
         "pose": {
           "type": "string",
-          "enum": ["idle", "standing", "sitting", "waving", "holding_cup", "looking_at_user", "unknown"]
+          "enum": ["idle", "standing", "sitting", "waving", "holding_cup", "looking_at_user", "attaching_prop", "unknown"]
         },
         "action": {
           "type": "string",
-          "enum": ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup"]
+          "enum": ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup", "attach_prop"]
         },
         "expression": {
           "type": "string",
@@ -42,6 +45,41 @@
         "holding": {
           "type": "string",
           "enum": ["none", "cup"]
+        },
+        "attached_prop": {
+          "type": "string",
+          "enum": ["none", "cup", "bucket"]
+        },
+        "target_socket": {
+          "type": "string",
+          "enum": ["none", "right_hand", "left_hand", "head", "back", "waist"]
+        },
+        "attachments": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["right_hand", "left_hand", "head", "back", "waist"],
+          "properties": {
+            "right_hand": {
+              "type": "string",
+              "enum": ["none", "cup", "bucket"]
+            },
+            "left_hand": {
+              "type": "string",
+              "enum": ["none", "cup", "bucket"]
+            },
+            "head": {
+              "type": "string",
+              "enum": ["none", "cup", "bucket"]
+            },
+            "back": {
+              "type": "string",
+              "enum": ["none", "cup", "bucket"]
+            },
+            "waist": {
+              "type": "string",
+              "enum": ["none", "cup", "bucket"]
+            }
+          }
         },
         "gaze": {
           "type": "string",
@@ -71,4 +109,3 @@
     }
   }
 }
-

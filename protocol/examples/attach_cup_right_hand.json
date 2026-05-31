@@ -1,0 +1,13 @@
+{
+  "id": "cmd_attach_cup_right_hand_001",
+  "intent": {
+    "action": "attach_prop",
+    "expression": "smile",
+    "prop": "cup",
+    "target_socket": "right_hand",
+    "gaze": "look_at_user",
+    "camera": "front_medium",
+    "screenshot": true
+  }
+}
+

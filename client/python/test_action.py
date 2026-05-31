@@ -83,6 +83,45 @@ TEST_INTENTS = [
             "camera": "front_medium",
             "screenshot": True,
         },
+        "expect": {
+            "attachments": {
+                "right_hand": "cup",
+            },
+        },
+    },
+    {
+        "id": "cmd_attach_cup_right_hand_001",
+        "intent": {
+            "action": "attach_prop",
+            "expression": "smile",
+            "prop": "cup",
+            "target_socket": "right_hand",
+            "gaze": "look_at_user",
+            "camera": "front_medium",
+            "screenshot": True,
+        },
+        "expect": {
+            "attachments": {
+                "right_hand": "cup",
+            },
+        },
+    },
+    {
+        "id": "cmd_attach_bucket_head_001",
+        "intent": {
+            "action": "attach_prop",
+            "expression": "surprised",
+            "prop": "bucket",
+            "target_socket": "head",
+            "gaze": "look_at_user",
+            "camera": "close_face",
+            "screenshot": True,
+        },
+        "expect": {
+            "attachments": {
+                "head": "bucket",
+            },
+        },
     },
 ]
 
@@ -154,6 +193,16 @@ def main() -> int:
             if screenshot_path and not (args.project_dir / screenshot_path).exists():
                 print(f"Missing screenshot: {screenshot_path}", file=sys.stderr)
                 return 1
+            expected_attachments = command.get("expect", {}).get("attachments", {})
+            for socket_name, prop_name in expected_attachments.items():
+                actual = state["state"].get("attachments", {}).get(socket_name)
+                if actual != prop_name:
+                    print(
+                        f"Expected attachments.{socket_name}={prop_name}, got {actual}",
+                        file=sys.stderr,
+                    )
+                    print(state, file=sys.stderr)
+                    return 1
     finally:
         if process is not None:
             process.terminate()
