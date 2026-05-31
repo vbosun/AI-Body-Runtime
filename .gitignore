@@ -225,6 +225,8 @@ __marimo__/
 godot/.godot/
 godot/**/*.uid
 godot/**/*.import
+godot/assets/characters/real_model/*.glb
+godot/assets/characters/real_model/body_Image*.png
 godot/runtime/inbox/*.json
 godot/runtime/outbox/*.json
 godot/outputs/screenshots/*.png
