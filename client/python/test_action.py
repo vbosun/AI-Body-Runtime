@@ -168,7 +168,7 @@ def main() -> int:
         help=f"Godot executable path. Overrides {GODOT_EXE_ENV}; otherwise PATH and the local default are tried.",
     )
     parser.add_argument("--launch-runtime", action="store_true")
-    parser.add_argument("--timeout", type=float, default=15.0)
+    parser.add_argument("--timeout", type=float, default=30.0)
     args = parser.parse_args()
     godot_exe = resolve_godot_exe(args.godot_exe)
     clear_runtime_files(args.project_dir)

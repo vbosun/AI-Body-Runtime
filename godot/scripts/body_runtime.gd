@@ -7,6 +7,56 @@ const GAZES := ["none", "look_at_user"]
 const CAMERAS := ["front_medium", "front_full", "close_face"]
 const SOCKETS := ["right_hand", "left_hand", "head", "back", "waist"]
 const BODY_MODES := ["placeholder", "real_model"]
+const BODY_PROFILES := {
+	"placeholder": {
+		"body_scale": Vector3.ONE,
+		"body_position": Vector3.ZERO,
+		"body_rotation": Vector3.ZERO,
+		"sit_chair_position": Vector3(-1.35, -0.32, 0.38),
+		"sit_chair_rotation": Vector3(0, 180, 0),
+		"prop_socket_offsets": {
+			"cup/right_hand": {
+				"position": Vector3(0, -0.08, 0),
+				"rotation": Vector3.ZERO,
+				"scale": Vector3.ONE
+			},
+			"bucket/head": {
+				"position": Vector3(0, 0.12, 0),
+				"rotation": Vector3.ZERO,
+				"scale": Vector3.ONE
+			},
+			"bucket/default": {
+				"position": Vector3(0, -0.05, 0),
+				"rotation": Vector3.ZERO,
+				"scale": Vector3.ONE
+			}
+		}
+	},
+	"real_model": {
+		"body_scale": Vector3.ONE,
+		"body_position": Vector3.ZERO,
+		"body_rotation": Vector3.ZERO,
+		"sit_chair_position": Vector3(-0.62, 0.0, -0.16),
+		"sit_chair_rotation": Vector3(0, 0, 0),
+		"prop_socket_offsets": {
+			"cup/right_hand": {
+				"position": Vector3(-0.08, -0.18, -0.04),
+				"rotation": Vector3(0, 0, -12),
+				"scale": Vector3(0.72, 0.72, 0.72)
+			},
+			"bucket/head": {
+				"position": Vector3(0, -0.26, 0),
+				"rotation": Vector3.ZERO,
+				"scale": Vector3(0.58, 0.58, 0.58)
+			},
+			"bucket/default": {
+				"position": Vector3(0, -0.05, 0),
+				"rotation": Vector3.ZERO,
+				"scale": Vector3(0.72, 0.72, 0.72)
+			}
+		}
+	}
+}
 
 # MVP uses res:// project-local files so command/state/screenshot artifacts are easy to inspect while debugging.
 const INBOX_PATH := "res://runtime/inbox/command.json"
@@ -70,6 +120,7 @@ var neutral_head_material: Material
 var smile_head_material: StandardMaterial3D
 var surprised_head_material: StandardMaterial3D
 var body_mode := "placeholder"
+var active_profile := BODY_PROFILES["placeholder"]
 
 
 func _ready() -> void:
@@ -100,6 +151,8 @@ func _configure_body_mode() -> void:
 	placeholder_body.visible = body_mode == "placeholder"
 	real_body.visible = body_mode == "real_model"
 	body = real_body if body_mode == "real_model" else placeholder_body
+	active_profile = BODY_PROFILES[body_mode]
+	_apply_body_profile()
 	current_state["body_mode"] = body_mode
 
 
@@ -115,6 +168,12 @@ func _resolve_body_mode() -> String:
 
 func _real_body_has_model() -> bool:
 	return real_body.has_method("has_model") and real_body.call("has_model")
+
+
+func _apply_body_profile() -> void:
+	body.scale = active_profile["body_scale"]
+	body.position = active_profile["body_position"]
+	body.rotation_degrees = active_profile["body_rotation"]
 
 
 func _process(_delta: float) -> void:
@@ -265,12 +324,13 @@ func _wave() -> void:
 
 
 func _sit_chair() -> void:
-	body.position = Vector3(-1.35, -0.32, 0.38)
-	body.rotation_degrees = Vector3(0, 180, 0)
-	left_leg.rotation_degrees = Vector3(-70, 0, 0)
-	right_leg.rotation_degrees = Vector3(-70, 0, 0)
-	left_leg.position = Vector3(-0.2, 0.95, -0.25)
-	right_leg.position = Vector3(0.2, 0.95, -0.25)
+	body.position = active_profile["sit_chair_position"]
+	body.rotation_degrees = active_profile["sit_chair_rotation"]
+	if body_mode == "placeholder":
+		left_leg.rotation_degrees = Vector3(-70, 0, 0)
+		right_leg.rotation_degrees = Vector3(-70, 0, 0)
+		left_leg.position = Vector3(-0.2, 0.95, -0.25)
+		right_leg.position = Vector3(0.2, 0.95, -0.25)
 
 
 func _apply_expression(expression: String) -> void:
@@ -315,6 +375,7 @@ func _restore_cup_to_table() -> void:
 	if cup.get_parent() != $TestRoom:
 		cup.reparent($TestRoom, false)
 	cup.transform = cup_table_transform
+	cup.scale = Vector3.ONE
 	_clear_prop_attachment("cup")
 
 
@@ -322,6 +383,7 @@ func _restore_bucket_to_start() -> void:
 	if bucket.get_parent() != $TestRoom:
 		bucket.reparent($TestRoom, false)
 	bucket.transform = bucket_start_transform
+	bucket.scale = Vector3.ONE
 	_clear_prop_attachment("bucket")
 
 
@@ -384,11 +446,20 @@ func _socket_node_name(socket_name: String) -> String:
 
 
 func _get_prop_socket_offset(prop: String, socket_name: String) -> Transform3D:
-	if prop == "bucket" and socket_name == "head":
-		return Transform3D(Basis(), Vector3(0, 0.12, 0))
-	if prop == "bucket":
-		return Transform3D(Basis(), Vector3(0, -0.05, 0))
-	return Transform3D(Basis(), Vector3(0, -0.08, 0))
+	var offsets: Dictionary = active_profile["prop_socket_offsets"]
+	var key := "%s/%s" % [prop, socket_name]
+	var offset: Dictionary = offsets.get(key, offsets.get("%s/default" % prop, {
+		"position": Vector3(0, -0.08, 0),
+		"rotation": Vector3.ZERO,
+		"scale": Vector3.ONE
+	}))
+	var basis := Basis.from_euler(Vector3(
+		deg_to_rad(offset["rotation"].x),
+		deg_to_rad(offset["rotation"].y),
+		deg_to_rad(offset["rotation"].z)
+	))
+	basis = basis.scaled(offset["scale"])
+	return Transform3D(basis, offset["position"])
 
 
 func _apply_gaze(gaze: String) -> void:

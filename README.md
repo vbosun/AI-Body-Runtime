@@ -126,7 +126,7 @@ cmd_attach_bucket_head_001: ok=True pose=attaching_prop
 
 ## Real Model Preparation
 
-The runtime defaults to `placeholder` mode. V0.3 adds a safe `real_model` preparation path without replacing the placeholder body.
+The runtime supports both `placeholder` and `real_model` body modes. The project config currently defaults to `real_model`, while the placeholder body remains available and is used as a fallback if no real model is loaded.
 
 Place a future GLB character at:
 
@@ -156,3 +156,11 @@ If the GLB is missing, the runtime logs a warning and falls back to `placeholder
 ```
 
 V0.3 only prepares loading and socket mapping. It does not add IK, animation retargeting, physics, or bone-level control.
+
+Real model assets are local development files and should not be committed. Files such as `body.glb` are ignored by git; keep source assets in `godot/assets/characters/real_model/` locally.
+
+The runtime uses an in-code body profile for each body mode. The real model profile currently controls:
+
+- body scale, position, and rotation
+- `sit_chair` position and rotation
+- prop/socket offsets for `cup/right_hand` and `bucket/head`

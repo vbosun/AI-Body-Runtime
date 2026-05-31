@@ -1,11 +1,14 @@
 extends Node3D
 
 const REAL_MODEL_PATH := "res://assets/characters/real_model/body.glb"
+const BODY_MODES := ["placeholder", "real_model"]
 
 var model_root: Node3D
 
 
 func _ready() -> void:
+	if _resolve_body_mode() != "real_model":
+		return
 	if not FileAccess.file_exists(REAL_MODEL_PATH):
 		push_warning("Real model GLB not found at %s. RealBody sockets are available, but no mesh was loaded." % REAL_MODEL_PATH)
 		return
@@ -26,3 +29,13 @@ func _ready() -> void:
 
 func has_model() -> bool:
 	return model_root != null
+
+
+func _resolve_body_mode() -> String:
+	var env_mode := OS.get_environment("AI_BODY_RUNTIME_BODY_MODE")
+	if BODY_MODES.has(env_mode):
+		return env_mode
+	var configured_mode := str(ProjectSettings.get_setting("ai_body_runtime/body_mode", "placeholder"))
+	if BODY_MODES.has(configured_mode):
+		return configured_mode
+	return "placeholder"
