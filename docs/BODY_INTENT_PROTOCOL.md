@@ -104,6 +104,7 @@ Example:
   "ok": true,
   "state": {
     "pose": "waving",
+    "body_mode": "placeholder",
     "action": "wave",
     "expression": "smile",
     "holding": "none",

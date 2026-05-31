@@ -120,4 +120,39 @@ cmd_look_001: ok=True pose=looking_at_user
 cmd_sit_001: ok=True pose=sitting
 cmd_stand_001: ok=True pose=standing
 cmd_cup_001: ok=True pose=holding_cup
+cmd_attach_cup_right_hand_001: ok=True pose=attaching_prop
+cmd_attach_bucket_head_001: ok=True pose=attaching_prop
 ```
+
+## Real Model Preparation
+
+The runtime defaults to `placeholder` mode. V0.3 adds a safe `real_model` preparation path without replacing the placeholder body.
+
+Place a future GLB character at:
+
+```text
+godot/assets/characters/real_model/body.glb
+```
+
+The reserved real model wrapper scene is:
+
+```text
+godot/scenes/RealBody.tscn
+```
+
+To request real model mode during local runs:
+
+```powershell
+$env:AI_BODY_RUNTIME_BODY_MODE="real_model"
+python client\python\test_action.py --launch-runtime
+```
+
+If the GLB is missing, the runtime logs a warning and falls back to `placeholder`. The state response includes:
+
+```json
+{
+  "body_mode": "placeholder"
+}
+```
+
+V0.3 only prepares loading and socket mapping. It does not add IK, animation retargeting, physics, or bone-level control.

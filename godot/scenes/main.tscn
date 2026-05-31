@@ -1,6 +1,7 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/body_runtime.gd" id="1_body_runtime"]
+[ext_resource type="PackedScene" path="res://scenes/RealBody.tscn" id="2_real_body"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_horizon_color = Color(0.78, 0.8, 0.84, 1)
@@ -224,6 +225,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0.22)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.16, -1)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="PlaceholderBody"]
+
+[node name="RealBody" parent="." instance=ExtResource("2_real_body")]
+visible = false
 
 [node name="Cameras" type="Node3D" parent="."]
 

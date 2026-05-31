@@ -18,6 +18,7 @@
       "additionalProperties": false,
       "required": [
         "pose",
+        "body_mode",
         "action",
         "expression",
         "holding",
@@ -33,6 +34,10 @@
         "pose": {
           "type": "string",
           "enum": ["idle", "standing", "sitting", "waving", "holding_cup", "looking_at_user", "attaching_prop", "unknown"]
+        },
+        "body_mode": {
+          "type": "string",
+          "enum": ["placeholder", "real_model"]
         },
         "action": {
           "type": "string",

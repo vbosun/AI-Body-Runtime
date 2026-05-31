@@ -6,6 +6,7 @@ const PROPS := ["none", "cup", "bucket"]
 const GAZES := ["none", "look_at_user"]
 const CAMERAS := ["front_medium", "front_full", "close_face"]
 const SOCKETS := ["right_hand", "left_hand", "head", "back", "waist"]
+const BODY_MODES := ["placeholder", "real_model"]
 
 # MVP uses res:// project-local files so command/state/screenshot artifacts are easy to inspect while debugging.
 const INBOX_PATH := "res://runtime/inbox/command.json"
@@ -14,6 +15,8 @@ const SCREENSHOT_DIR := "res://outputs/screenshots"
 const LOG_PATH := "res://outputs/logs/runtime.jsonl"
 
 @onready var body: Node3D = $PlaceholderBody
+@onready var placeholder_body: Node3D = $PlaceholderBody
+@onready var real_body: Node3D = $RealBody
 @onready var body_mesh: MeshInstance3D = $PlaceholderBody/BodyMesh
 @onready var head_mesh: MeshInstance3D = $PlaceholderBody/HeadMesh
 @onready var left_arm: MeshInstance3D = $PlaceholderBody/LeftArmMesh
@@ -36,6 +39,7 @@ var is_busy := false
 var last_command_hash := 0
 var current_state := {
 	"pose": "standing",
+	"body_mode": "placeholder",
 	"action": "idle",
 	"expression": "neutral",
 	"holding": "none",
@@ -65,9 +69,11 @@ var bucket_start_transform: Transform3D
 var neutral_head_material: Material
 var smile_head_material: StandardMaterial3D
 var surprised_head_material: StandardMaterial3D
+var body_mode := "placeholder"
 
 
 func _ready() -> void:
+	_configure_body_mode()
 	body_start_transform = body.transform
 	head_start_transform = head_mesh.transform
 	left_arm_start_transform = left_arm.transform
@@ -83,6 +89,32 @@ func _ready() -> void:
 	_ensure_runtime_dirs()
 	_write_state_atomic("startup", true, "", [], {}, {})
 	print("AI Body Runtime ready. Watching ", INBOX_PATH)
+
+
+func _configure_body_mode() -> void:
+	body_mode = _resolve_body_mode()
+	if body_mode == "real_model" and not _real_body_has_model():
+		push_warning("body_mode=real_model requested, but no real model is loaded. Falling back to placeholder.")
+		body_mode = "placeholder"
+
+	placeholder_body.visible = body_mode == "placeholder"
+	real_body.visible = body_mode == "real_model"
+	body = real_body if body_mode == "real_model" else placeholder_body
+	current_state["body_mode"] = body_mode
+
+
+func _resolve_body_mode() -> String:
+	var env_mode := OS.get_environment("AI_BODY_RUNTIME_BODY_MODE")
+	if BODY_MODES.has(env_mode):
+		return env_mode
+	var configured_mode := str(ProjectSettings.get_setting("ai_body_runtime/body_mode", "placeholder"))
+	if BODY_MODES.has(configured_mode):
+		return configured_mode
+	return "placeholder"
+
+
+func _real_body_has_model() -> bool:
+	return real_body.has_method("has_model") and real_body.call("has_model")
 
 
 func _process(_delta: float) -> void:
@@ -318,6 +350,10 @@ func _get_prop_node(prop: String) -> Node3D:
 
 
 func _get_socket_node(socket_name: String) -> Marker3D:
+	if body_mode == "real_model":
+		var real_socket := real_body.get_node_or_null(_socket_node_name(socket_name))
+		if real_socket is Marker3D:
+			return real_socket
 	match socket_name:
 		"right_hand":
 			return right_hand_socket
@@ -330,6 +366,21 @@ func _get_socket_node(socket_name: String) -> Marker3D:
 		"waist":
 			return waist_socket
 	return null
+
+
+func _socket_node_name(socket_name: String) -> String:
+	match socket_name:
+		"right_hand":
+			return "RightHandSocket"
+		"left_hand":
+			return "LeftHandSocket"
+		"head":
+			return "HeadSocket"
+		"back":
+			return "BackSocket"
+		"waist":
+			return "WaistSocket"
+	return ""
 
 
 func _get_prop_socket_offset(prop: String, socket_name: String) -> Transform3D:
