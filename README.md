@@ -183,8 +183,12 @@ If no matching animation exists, the runtime uses the real model profile fallbac
 {
   "action_source": "profile_fallback",
   "animation_name": "none",
+  "animation_length": 0.0,
+  "animation_wait_time": 0.2,
   "available_animations": []
 }
 ```
+
+V0.5 records animation playback timing. When a real animation plays, `animation_length` is the clip length in seconds and `animation_wait_time` is the clamped pre-screenshot wait time, from `0.25` to `2.0` seconds. If the animation length cannot be read, the runtime waits `0.25` seconds. Placeholder, profile fallback, and programmatic actions report `animation_length: 0.0` and use either `0.0` or the current fallback wait time.
 
 Placeholder mode continues to use primitive transforms and reports `action_source: "placeholder_transform"`. Animation sources can come from model-bundled clips, Mixamo/FBX libraries, BVH motion capture, Blender-authored clips, or later private local animation packs. These assets should stay in gitignored local directories and should not be committed to a public repository.

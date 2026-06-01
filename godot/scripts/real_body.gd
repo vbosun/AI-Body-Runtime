@@ -75,6 +75,25 @@ func has_animation(action_name: String) -> bool:
 	return not get_action_animation_name(action_name).is_empty()
 
 
+func get_action_animation_info(action_name: String) -> Dictionary:
+	var animation_name := get_action_animation_name(action_name)
+	if animation_name.is_empty() or animation_player == null:
+		return {
+			"exists": false,
+			"animation_name": "none",
+			"length": 0.0
+		}
+	var animation := animation_player.get_animation(animation_name)
+	var length := 0.0
+	if animation != null:
+		length = animation.length
+	return {
+		"exists": true,
+		"animation_name": animation_name,
+		"length": length
+	}
+
+
 func get_action_animation_name(action_name: String) -> String:
 	if animation_player == null:
 		return ""

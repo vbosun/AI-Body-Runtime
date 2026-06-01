@@ -22,6 +22,8 @@
         "action",
         "action_source",
         "animation_name",
+        "animation_length",
+        "animation_wait_time",
         "available_animations",
         "expression",
         "holding",
@@ -53,6 +55,14 @@
         "animation_name": {
           "type": "string",
           "minLength": 1
+        },
+        "animation_length": {
+          "type": "number",
+          "minimum": 0
+        },
+        "animation_wait_time": {
+          "type": "number",
+          "minimum": 0
         },
         "available_animations": {
           "type": "array",

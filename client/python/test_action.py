@@ -194,6 +194,7 @@ def main() -> int:
             print(
                 f"{command['id']}: ok={state['ok']} pose={state['state']['pose']} "
                 f"source={state['state'].get('action_source')} animation={state['state'].get('animation_name')} "
+                f"wait={state['state'].get('animation_wait_time')} "
                 f"screenshot={state['screenshot_path']}"
             )
             if not state["ok"]:
@@ -207,9 +208,17 @@ def main() -> int:
             if (
                 "action_source" not in state["state"]
                 or "animation_name" not in state["state"]
+                or "animation_length" not in state["state"]
+                or "animation_wait_time" not in state["state"]
                 or "available_animations" not in state["state"]
             ):
                 print(f"Missing action adapter fields in state: {state}", file=sys.stderr)
+                return 1
+            if not isinstance(state["state"]["animation_length"], (int, float)):
+                print(f"animation_length must be numeric: {state}", file=sys.stderr)
+                return 1
+            if not isinstance(state["state"]["animation_wait_time"], (int, float)):
+                print(f"animation_wait_time must be numeric: {state}", file=sys.stderr)
                 return 1
             if not isinstance(state["state"]["available_animations"], list):
                 print(f"available_animations must be a list: {state}", file=sys.stderr)

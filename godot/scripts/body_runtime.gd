@@ -93,6 +93,8 @@ var current_state := {
 	"action": "idle",
 	"action_source": "placeholder_transform",
 	"animation_name": "none",
+	"animation_length": 0.0,
+	"animation_wait_time": 0.0,
 	"available_animations": [],
 	"expression": "neutral",
 	"holding": "none",
@@ -278,6 +280,8 @@ func _normalize_enum(intent: Dictionary, key: String, allowed: Array, fallback: 
 
 func _apply_action(action: String) -> void:
 	current_state["animation_name"] = "none"
+	current_state["animation_length"] = 0.0
+	current_state["animation_wait_time"] = 0.0
 	current_state["available_animations"] = _get_available_animations()
 	if action == "look_at_user" or action == "attach_prop":
 		await _apply_programmatic_action(action)
@@ -291,6 +295,7 @@ func _apply_action(action: String) -> void:
 func _apply_programmatic_action(action: String) -> void:
 	current_state["action_source"] = "programmatic"
 	current_state["animation_name"] = "none"
+	current_state["animation_length"] = 0.0
 	_reset_body_pose()
 	match action:
 		"look_at_user":
@@ -298,7 +303,7 @@ func _apply_programmatic_action(action: String) -> void:
 			current_state["pose"] = "looking_at_user"
 		"attach_prop":
 			current_state["pose"] = "attaching_prop"
-	await get_tree().create_timer(0.2).timeout
+	await _wait_for_action_capture(0.2)
 
 
 func _apply_placeholder_action(action: String) -> void:
@@ -307,44 +312,52 @@ func _apply_placeholder_action(action: String) -> void:
 		"idle":
 			_reset_body_pose()
 			current_state["pose"] = "standing"
+			current_state["animation_wait_time"] = 0.0
 		"look_at_user":
 			_reset_body_pose()
 			_head_look_at_user()
 			current_state["pose"] = "looking_at_user"
+			current_state["animation_wait_time"] = 0.0
 		"wave":
 			_reset_body_pose()
+			current_state["animation_wait_time"] = 0.96
 			await _wave()
 			current_state["pose"] = "waving"
 		"sit_chair":
 			_sit_chair()
 			current_state["pose"] = "sitting"
-			await get_tree().create_timer(0.4).timeout
+			await _wait_for_action_capture(0.4)
 		"stand_up":
 			_reset_body_pose()
 			current_state["pose"] = "standing"
-			await get_tree().create_timer(0.25).timeout
+			await _wait_for_action_capture(0.25)
 		"hold_cup":
 			_reset_body_pose()
 			current_state["pose"] = "holding_cup"
-			await get_tree().create_timer(0.25).timeout
+			await _wait_for_action_capture(0.25)
 		"attach_prop":
 			_reset_body_pose()
 			current_state["pose"] = "attaching_prop"
-			await get_tree().create_timer(0.2).timeout
+			await _wait_for_action_capture(0.2)
 
 
 func _apply_real_model_action(action: String) -> void:
 	_reset_body_pose()
-	var animation_name := _get_real_model_animation_name(action)
+	var animation_info := _get_real_model_animation_info(action)
 	if _play_real_model_animation(action):
+		var animation_length := float(animation_info.get("length", 0.0))
+		var wait_time: float = clampf(animation_length, 0.25, 2.0)
 		current_state["action_source"] = "animation"
-		current_state["animation_name"] = animation_name
+		current_state["animation_name"] = str(animation_info.get("animation_name", action))
+		current_state["animation_length"] = animation_length
+		current_state["animation_wait_time"] = wait_time
 		current_state["pose"] = _pose_for_action(action)
-		await get_tree().create_timer(0.25).timeout
+		await get_tree().create_timer(wait_time).timeout
 		return
 	current_state["action_source"] = "profile_fallback"
 	current_state["animation_name"] = "none"
-	_apply_real_model_profile_fallback(action)
+	current_state["animation_length"] = 0.0
+	await _apply_real_model_profile_fallback(action)
 
 
 func _play_real_model_animation(action: String) -> bool:
@@ -357,6 +370,18 @@ func _get_real_model_animation_name(action: String) -> String:
 		if not animation_name.is_empty():
 			return animation_name
 	return action
+
+
+func _get_real_model_animation_info(action: String) -> Dictionary:
+	if real_body.has_method("get_action_animation_info"):
+		var info = real_body.call("get_action_animation_info", action)
+		if typeof(info) == TYPE_DICTIONARY:
+			return info
+	return {
+		"exists": false,
+		"animation_name": "none",
+		"length": 0.0
+	}
 
 
 func _get_available_animations() -> Array:
@@ -382,7 +407,13 @@ func _apply_real_model_profile_fallback(action: String) -> void:
 			current_state["pose"] = "holding_cup"
 		"attach_prop":
 			current_state["pose"] = "attaching_prop"
-	await get_tree().create_timer(0.2).timeout
+	await _wait_for_action_capture(0.2)
+
+
+func _wait_for_action_capture(wait_time: float) -> void:
+	current_state["animation_wait_time"] = wait_time
+	if wait_time > 0.0:
+		await get_tree().create_timer(wait_time).timeout
 
 
 func _pose_for_action(action: String) -> String:
