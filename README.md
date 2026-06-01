@@ -192,3 +192,27 @@ If no matching animation exists, the runtime uses the real model profile fallbac
 V0.5 records animation playback timing. When a real animation plays, `animation_length` is the clip length in seconds and `animation_wait_time` is the clamped pre-screenshot wait time, from `0.25` to `2.0` seconds. If the animation length cannot be read, the runtime waits `0.25` seconds. Placeholder, profile fallback, and programmatic actions report `animation_length: 0.0` and use either `0.0` or the current fallback wait time.
 
 Placeholder mode continues to use primitive transforms and reports `action_source: "placeholder_transform"`. Animation sources can come from model-bundled clips, Mixamo/FBX libraries, BVH motion capture, Blender-authored clips, or later private local animation packs. These assets should stay in gitignored local directories and should not be committed to a public repository.
+
+## V0.6 Local Animation Test
+
+Place local third-party animation files under:
+
+```text
+godot/assets_local/animations/basic/
+```
+
+Expected local file names for the first fixture are `Idle.fbx`, `Run.fbx`, `Jump.fbx`, `Interact.fbx`, `wave.bvh`, and `sit_stand.bvh`. They are ignored by git.
+
+Generate the local runtime animation library:
+
+```powershell
+D:\Software\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64_console.exe --headless --path godot --script res://scripts/import_basic_animations.gd
+```
+
+Then run the first real animation assertion:
+
+```powershell
+python client\python\test_action.py --launch-runtime --expect-animation wave
+```
+
+The importer writes `godot/outputs/logs/animation_debug.json` with the generated `available_animations` list. The committed `.tres` fixture contains only lightweight test tracks; the original FBX/BVH files remain local.

@@ -1,0 +1,53 @@
+{
+	"action_candidates": {
+		"hold_cup": [
+			"hold_cup",
+			"HoldCup"
+		],
+		"idle": [
+			"Idle",
+			"idle"
+		],
+		"interact": [
+			"Interact",
+			"interact"
+		],
+		"jump": [
+			"Jump",
+			"jump"
+		],
+		"run": [
+			"Run",
+			"run"
+		],
+		"sit_chair": [
+			"sit_stand",
+			"sit_chair",
+			"sit_down",
+			"Sit",
+			"SitDown",
+			"Sitting"
+		],
+		"stand_up": [
+			"stand_up",
+			"StandUp",
+			"standing_up"
+		],
+		"wave": [
+			"wave",
+			"Wave",
+			"waving",
+			"Waving"
+		]
+	},
+	"animation_library": "res://assets/generated/real_model/basic_animation_library.tres",
+	"available_animations": [
+		"Idle",
+		"Interact",
+		"Jump",
+		"Run",
+		"sit_stand",
+		"wave"
+	],
+	"time": "2026-06-01 14:52:10"
+}

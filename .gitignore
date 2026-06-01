@@ -225,9 +225,11 @@ __marimo__/
 godot/.godot/
 godot/**/*.uid
 godot/**/*.import
+godot/assets_local/
 godot/assets/characters/real_model/*.glb
 godot/assets/characters/real_model/*.zip
 godot/assets/characters/real_model/textures/
+godot/assets/characters/real_model/animations/
 godot/assets/characters/real_model/body_Image*.png
 godot/assets/characters/real_model/body_*.png
 godot/assets/characters/real_model/body_*.jpg

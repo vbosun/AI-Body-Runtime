@@ -131,6 +131,57 @@ TEST_INTENTS = [
     },
 ]
 
+EXPECT_ANIMATION_INTENTS = {
+    "idle": {
+        "action": "idle",
+        "expression": "neutral",
+        "prop": "none",
+        "gaze": "none",
+        "camera": "front_medium",
+        "screenshot": True,
+    },
+    "wave": {
+        "action": "wave",
+        "expression": "smile",
+        "prop": "none",
+        "gaze": "look_at_user",
+        "camera": "front_medium",
+        "screenshot": True,
+    },
+    "sit_chair": {
+        "action": "sit_chair",
+        "expression": "neutral",
+        "prop": "none",
+        "gaze": "look_at_user",
+        "camera": "front_full",
+        "screenshot": True,
+    },
+    "run": {
+        "action": "run",
+        "expression": "neutral",
+        "prop": "none",
+        "gaze": "none",
+        "camera": "front_full",
+        "screenshot": True,
+    },
+    "jump": {
+        "action": "jump",
+        "expression": "neutral",
+        "prop": "none",
+        "gaze": "none",
+        "camera": "front_full",
+        "screenshot": True,
+    },
+    "interact": {
+        "action": "interact",
+        "expression": "neutral",
+        "prop": "none",
+        "gaze": "look_at_user",
+        "camera": "front_medium",
+        "screenshot": True,
+    },
+}
+
 
 def launch_runtime(project_dir: Path, godot_exe: Path) -> subprocess.Popen[str]:
     return subprocess.Popen(
@@ -174,6 +225,12 @@ def main() -> int:
         help=f"Godot executable path. Overrides {GODOT_EXE_ENV}; otherwise PATH and the local default are tried.",
     )
     parser.add_argument("--launch-runtime", action="store_true")
+    parser.add_argument(
+        "--expect-animation",
+        choices=sorted(EXPECT_ANIMATION_INTENTS),
+        default=None,
+        help="Send one action and require real_model animation playback for it.",
+    )
     parser.add_argument("--timeout", type=float, default=30.0)
     args = parser.parse_args()
     godot_exe = resolve_godot_exe(args.godot_exe)
@@ -189,7 +246,16 @@ def main() -> int:
 
     client = BodyClient(args.project_dir, timeout_seconds=args.timeout)
     try:
-        for command in TEST_INTENTS:
+        commands = TEST_INTENTS
+        if args.expect_animation is not None:
+            commands = [
+                {
+                    "id": f"cmd_expect_animation_{args.expect_animation}",
+                    "intent": EXPECT_ANIMATION_INTENTS[args.expect_animation],
+                    "expect_animation": args.expect_animation,
+                }
+            ]
+        for command in commands:
             state = client.send_intent(command["id"], command["intent"])
             print(
                 f"{command['id']}: ok={state['ok']} pose={state['state']['pose']} "
@@ -223,6 +289,16 @@ def main() -> int:
             if not isinstance(state["state"]["available_animations"], list):
                 print(f"available_animations must be a list: {state}", file=sys.stderr)
                 return 1
+            if command.get("expect_animation") is not None:
+                if state["state"].get("action_source") != "animation":
+                    print(f"Expected animation playback, got: {state}", file=sys.stderr)
+                    return 1
+                if state["state"].get("animation_length", 0) <= 0:
+                    print(f"Expected animation_length > 0, got: {state}", file=sys.stderr)
+                    return 1
+                if state["state"].get("animation_name") not in state["state"].get("available_animations", []):
+                    print(f"Expected animation_name to be listed in available_animations: {state}", file=sys.stderr)
+                    return 1
             if body_mode == "placeholder":
                 source = state["state"].get("action_source")
                 if command["intent"]["action"] in {"look_at_user", "attach_prop"}:

@@ -134,3 +134,24 @@ V0.4 introduces an action slot adapter for real models. If the loaded GLB contai
 Animation sources can come from the model itself, Mixamo or FBX action libraries, BVH motion capture, Blender-authored poses or animations, or later local private animation packs. Users do not need to hand-author animations for the runtime to work: when an animation exists, BodyState reports `action_source: "animation"` and the actual `animation_name`; when it does not exist, BodyState reports `action_source: "profile_fallback"` and `animation_name: "none"`.
 
 Keep real models, third-party animation files, generated texture files, and private animation packs out of git. Store them under gitignored local asset directories.
+
+## V0.6 Local Animation Fixture
+
+The first real animation test uses local files under:
+
+```text
+godot/assets_local/animations/basic/
+```
+
+Expected local files:
+
+- `Idle.fbx`
+- `Run.fbx`
+- `Jump.fbx`
+- `Interact.fbx`
+- `wave.bvh`
+- `sit_stand.bvh`
+
+Run `godot --headless --path godot --script res://scripts/import_basic_animations.gd` to scan those files, generate `res://assets/generated/real_model/basic_animation_library.tres`, and write `res://outputs/logs/animation_debug.json`.
+
+The committed generated library is an integration fixture with lightweight runtime tracks. It proves the action slot, `AnimationPlayer`, timing, screenshot, and `BodyState` path before the project adds a full skeleton retarget map. The original FBX/BVH files remain local and ignored.

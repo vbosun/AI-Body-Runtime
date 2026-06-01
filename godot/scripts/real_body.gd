@@ -2,6 +2,8 @@ extends Node3D
 
 const REAL_MODEL_PATH := "res://assets/characters/real_model/body.glb"
 const TEXTURE_DIR := "res://assets/characters/real_model/textures"
+const BASIC_ANIMATION_LIBRARY_PATH := "res://assets/generated/real_model/basic_animation_library.tres"
+const ANIMATION_DEBUG_PATH := "res://outputs/logs/animation_debug.json"
 const BODY_MODES := ["placeholder", "real_model"]
 const BASE_COLOR_TEXTURES := {
 	"face": "Scarlet_Face_D.png",
@@ -23,9 +25,12 @@ const BASE_COLOR_TEXTURES := {
 	"eyesocket": "Scarlet_Eyes_D.jpg"
 }
 const ACTION_ANIMATION_CANDIDATES := {
-	"idle": ["idle", "Idle"],
+	"idle": ["Idle", "idle"],
+	"run": ["Run", "run"],
+	"jump": ["Jump", "jump"],
+	"interact": ["Interact", "interact"],
 	"wave": ["wave", "Wave", "waving", "Waving"],
-	"sit_chair": ["sit_chair", "sit_down", "Sit", "SitDown", "Sitting"],
+	"sit_chair": ["sit_stand", "sit_chair", "sit_down", "Sit", "SitDown", "Sitting"],
 	"stand_up": ["stand_up", "StandUp", "standing_up"],
 	"hold_cup": ["hold_cup", "HoldCup"]
 }
@@ -53,7 +58,10 @@ func _ready() -> void:
 		model_root.name = "ModelRoot"
 		add_child(model_root)
 		animation_player = _find_animation_player(model_root)
+		_ensure_animation_player()
+		_load_basic_animation_library()
 		_apply_material_textures(model_root)
+		_write_animation_debug()
 	else:
 		push_warning("Real model GLB at %s did not generate a Node3D scene." % REAL_MODEL_PATH)
 
@@ -103,12 +111,14 @@ func get_action_animation_name(action_name: String) -> String:
 	return ""
 
 
-func play_action_animation(action_name: String) -> bool:
-	var animation_name := get_action_animation_name(action_name)
-	if animation_name.is_empty():
-		return false
-	animation_player.play(animation_name)
-	return true
+func play_action_animation(action_name: String) -> Dictionary:
+	var info := get_action_animation_info(action_name)
+	if not bool(info["exists"]):
+		info["played"] = false
+		return info
+	animation_player.play(str(info["animation_name"]))
+	info["played"] = true
+	return info
 
 
 func _resolve_body_mode() -> String:
@@ -129,6 +139,46 @@ func _find_animation_player(node: Node) -> AnimationPlayer:
 		if found != null:
 			return found
 	return null
+
+
+func _ensure_animation_player() -> void:
+	if animation_player != null:
+		return
+	animation_player = AnimationPlayer.new()
+	animation_player.name = "AnimationPlayer"
+	add_child(animation_player)
+
+
+func _load_basic_animation_library() -> void:
+	if animation_player == null:
+		return
+	if not ResourceLoader.exists(BASIC_ANIMATION_LIBRARY_PATH):
+		return
+	var library := load(BASIC_ANIMATION_LIBRARY_PATH)
+	if library is AnimationLibrary:
+		if animation_player.has_animation_library(""):
+			var target_library := animation_player.get_animation_library("")
+			for animation_name in library.get_animation_list():
+				target_library.add_animation(animation_name, library.get_animation(animation_name))
+		else:
+			var err := animation_player.add_animation_library("", library)
+			if err != OK:
+				push_warning("Failed to attach basic animation library %s. Error: %s" % [BASIC_ANIMATION_LIBRARY_PATH, err])
+
+
+func _write_animation_debug() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://outputs/logs"))
+	var file := FileAccess.open(ANIMATION_DEBUG_PATH, FileAccess.WRITE)
+	if file == null:
+		push_warning("Failed to write animation debug log at %s." % ANIMATION_DEBUG_PATH)
+		return
+	file.store_string(JSON.stringify({
+		"time": Time.get_datetime_string_from_system(false, true),
+		"animation_library": BASIC_ANIMATION_LIBRARY_PATH,
+		"available_animations": get_animation_names(),
+		"action_candidates": ACTION_ANIMATION_CANDIDATES
+	}, "\t"))
+	file.close()
 
 
 func _apply_material_textures(node: Node) -> void:

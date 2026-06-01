@@ -40,6 +40,9 @@ Allowed `action` values:
 - `stand_up`
 - `hold_cup`
 - `attach_prop`
+- `run`
+- `jump`
+- `interact`
 
 Example commands are available under `protocol/examples/`.
 
@@ -142,6 +145,8 @@ Example:
 `animation_name` is the actual clip name when `action_source` is `animation`; otherwise it is `none`. `animation_length` is the detected clip length in seconds. `animation_wait_time` is the number of seconds the runtime waited before taking the screenshot; real animation waits are clamped to `0.25` through `2.0` seconds, and missing animation lengths fall back to `0.25`. `available_animations` lists animation names detected on the current real model and can be an empty array.
 
 Real model animations may come from model-bundled clips, Mixamo/FBX action libraries, BVH motion capture, Blender-authored clips, or later local private animation packs. Recommended clip names include `idle`, `wave`, `sit_chair` or `sit_down`, `stand_up`, and `hold_cup`. If no clip exists, the protocol still succeeds through fallback behavior.
+
+V0.6 adds a local animation integration fixture. Third-party FBX/BVH files stay under `godot/assets_local/animations/basic/` and are ignored by git. Run `godot --headless --path godot --script res://scripts/import_basic_animations.gd` to scan those local files, generate `res://assets/generated/real_model/basic_animation_library.tres`, and write `res://outputs/logs/animation_debug.json`. The runtime reports any generated clips through `available_animations`.
 
 ## Consistency Rules
 

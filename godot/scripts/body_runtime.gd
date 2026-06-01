@@ -1,6 +1,6 @@
 extends Node3D
 
-const ACTIONS := ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup", "attach_prop"]
+const ACTIONS := ["idle", "look_at_user", "wave", "sit_chair", "stand_up", "hold_cup", "attach_prop", "run", "jump", "interact"]
 const EXPRESSIONS := ["neutral", "smile", "surprised"]
 const PROPS := ["none", "cup", "bucket"]
 const GAZES := ["none", "look_at_user"]
@@ -343,8 +343,8 @@ func _apply_placeholder_action(action: String) -> void:
 
 func _apply_real_model_action(action: String) -> void:
 	_reset_body_pose()
-	var animation_info := _get_real_model_animation_info(action)
-	if _play_real_model_animation(action):
+	var animation_info := _play_real_model_animation(action)
+	if bool(animation_info.get("played", false)):
 		var animation_length := float(animation_info.get("length", 0.0))
 		var wait_time: float = clampf(animation_length, 0.25, 2.0)
 		current_state["action_source"] = "animation"
@@ -360,8 +360,19 @@ func _apply_real_model_action(action: String) -> void:
 	await _apply_real_model_profile_fallback(action)
 
 
-func _play_real_model_animation(action: String) -> bool:
-	return real_body.has_method("play_action_animation") and real_body.call("play_action_animation", action)
+func _play_real_model_animation(action: String) -> Dictionary:
+	if real_body.has_method("play_action_animation"):
+		var result = real_body.call("play_action_animation", action)
+		if typeof(result) == TYPE_DICTIONARY:
+			return result
+		if typeof(result) == TYPE_BOOL and result:
+			return _get_real_model_animation_info(action).merged({"played": true})
+	return {
+		"played": false,
+		"exists": false,
+		"animation_name": "none",
+		"length": 0.0
+	}
 
 
 func _get_real_model_animation_name(action: String) -> String:
@@ -407,6 +418,12 @@ func _apply_real_model_profile_fallback(action: String) -> void:
 			current_state["pose"] = "holding_cup"
 		"attach_prop":
 			current_state["pose"] = "attaching_prop"
+		"run":
+			current_state["pose"] = "standing"
+		"jump":
+			current_state["pose"] = "standing"
+		"interact":
+			current_state["pose"] = "standing"
 	await _wait_for_action_capture(0.2)
 
 
@@ -432,6 +449,12 @@ func _pose_for_action(action: String) -> String:
 			return "holding_cup"
 		"attach_prop":
 			return "attaching_prop"
+		"run":
+			return "standing"
+		"jump":
+			return "standing"
+		"interact":
+			return "standing"
 	return "unknown"
 
 
