@@ -216,3 +216,21 @@ python client\python\test_action.py --launch-runtime --expect-animation wave
 ```
 
 The importer writes `godot/outputs/logs/animation_debug.json` with the generated `available_animations` list. The committed `.tres` fixture contains only lightweight test tracks; the original FBX/BVH files remain local.
+
+## V0.7 Skeleton Track Debugging
+
+If an action reports `action_source: "animation"` but the arm does not move, the animation may only affect the model root transform. V0.6's `wave` fixture proves the runtime playback path by animating `ModelRoot`, but it is not a real bone-retargeted hand wave.
+
+Real arm motion needs animation tracks that target the imported `Skeleton3D` or its bones. Run:
+
+```powershell
+python client\python\test_action.py --launch-runtime --expect-animation wave --dump-skeleton-debug
+```
+
+The runtime writes:
+
+```text
+godot/outputs/logs/skeleton_debug.json
+```
+
+That file lists detected `Skeleton3D` nodes, bone names, animation track paths, and diagnosis lines such as `animation wave affects ModelRoot/root transform only, not skeleton bones`.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -215,6 +216,38 @@ def resolve_godot_exe(cli_value: Path | None) -> Path:
     return DEFAULT_GODOT_EXE
 
 
+def dump_skeleton_debug(project_dir: Path) -> bool:
+    debug_path = project_dir / "outputs" / "logs" / "skeleton_debug.json"
+    if not debug_path.exists():
+        print(f"Missing skeleton debug log: {debug_path}", file=sys.stderr)
+        return False
+    data = json.loads(debug_path.read_text(encoding="utf-8"))
+    skeletons = data.get("skeletons", [])
+    animations = data.get("available_animations", [])
+    tracks_by_animation = data.get("animation_tracks", {})
+    diagnosis = data.get("diagnosis", [])
+
+    print(f"skeleton_debug: skeletons={len(skeletons)} animations={len(animations)}")
+    for skeleton in skeletons:
+        bones = skeleton.get("bones", [])
+        preview = ", ".join(str(name) for name in bones[:8])
+        suffix = "..." if len(bones) > 8 else ""
+        print(
+            f"  skeleton path={skeleton.get('path')} "
+            f"bone_count={skeleton.get('bone_count')} bones=[{preview}{suffix}]"
+        )
+    for animation_name, tracks in tracks_by_animation.items():
+        print(f"  animation {animation_name}: tracks={len(tracks)}")
+        for track in tracks[:4]:
+            print(
+                f"    #{track.get('track_index')} {track.get('type')} "
+                f"path={track.get('path_text')} keys={track.get('key_count')}"
+            )
+    for line in diagnosis:
+        print(f"  diagnosis: {line}")
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run AI Body Runtime MVP action tests.")
     parser.add_argument("--project-dir", type=Path, default=default_project_dir())
@@ -230,6 +263,11 @@ def main() -> int:
         choices=sorted(EXPECT_ANIMATION_INTENTS),
         default=None,
         help="Send one action and require real_model animation playback for it.",
+    )
+    parser.add_argument(
+        "--dump-skeleton-debug",
+        action="store_true",
+        help="Require and print outputs/logs/skeleton_debug.json after the run.",
     )
     parser.add_argument("--timeout", type=float, default=30.0)
     args = parser.parse_args()
@@ -329,6 +367,8 @@ def main() -> int:
                     )
                     print(state, file=sys.stderr)
                     return 1
+        if args.dump_skeleton_debug and not dump_skeleton_debug(args.project_dir):
+            return 1
     finally:
         if process is not None:
             process.terminate()

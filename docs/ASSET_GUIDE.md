@@ -155,3 +155,20 @@ Expected local files:
 Run `godot --headless --path godot --script res://scripts/import_basic_animations.gd` to scan those files, generate `res://assets/generated/real_model/basic_animation_library.tres`, and write `res://outputs/logs/animation_debug.json`.
 
 The committed generated library is an integration fixture with lightweight runtime tracks. It proves the action slot, `AnimationPlayer`, timing, screenshot, and `BodyState` path before the project adds a full skeleton retarget map. The original FBX/BVH files remain local and ignored.
+
+## Skeleton Animation Tracks
+
+For a real character limb to move, the animation must contain tracks that target the imported `Skeleton3D` or its bones. An animation that only targets `ModelRoot:position` or `ModelRoot:rotation_degrees` is useful as a playback fixture, but it will move or rotate the whole imported model instead of waving an arm.
+
+BVH and FBX motion files must eventually be retargeted to the current character skeleton. Before doing that work, run:
+
+```powershell
+python client\python\test_action.py --launch-runtime --expect-animation wave --dump-skeleton-debug
+```
+
+The runtime writes `godot/outputs/logs/skeleton_debug.json` with:
+
+- every detected `Skeleton3D` path
+- bone counts and bone names
+- every animation track path and key count
+- diagnosis lines that call out root-only tracks versus skeleton/bone tracks

@@ -4,6 +4,7 @@ const REAL_MODEL_PATH := "res://assets/characters/real_model/body.glb"
 const TEXTURE_DIR := "res://assets/characters/real_model/textures"
 const BASIC_ANIMATION_LIBRARY_PATH := "res://assets/generated/real_model/basic_animation_library.tres"
 const ANIMATION_DEBUG_PATH := "res://outputs/logs/animation_debug.json"
+const SKELETON_DEBUG_PATH := "res://outputs/logs/skeleton_debug.json"
 const BODY_MODES := ["placeholder", "real_model"]
 const BASE_COLOR_TEXTURES := {
 	"face": "Scarlet_Face_D.png",
@@ -62,6 +63,7 @@ func _ready() -> void:
 		_load_basic_animation_library()
 		_apply_material_textures(model_root)
 		_write_animation_debug()
+		_write_skeleton_debug()
 	else:
 		push_warning("Real model GLB at %s did not generate a Node3D scene." % REAL_MODEL_PATH)
 
@@ -77,6 +79,34 @@ func get_animation_names() -> Array[String]:
 	for animation_name in animation_player.get_animation_list():
 		names.append(str(animation_name))
 	return names
+
+
+func get_skeleton_paths() -> Array[String]:
+	var paths: Array[String] = []
+	for skeleton in _get_skeletons():
+		paths.append(str(skeleton.get_path()))
+	return paths
+
+
+func get_primary_skeleton() -> Skeleton3D:
+	var skeletons := _get_skeletons()
+	if skeletons.is_empty():
+		return null
+	return skeletons[0]
+
+
+func get_bone_names() -> Array[String]:
+	var skeleton := get_primary_skeleton()
+	if skeleton == null:
+		return []
+	return _get_bone_names_for_skeleton(skeleton)
+
+
+func get_bone_count() -> int:
+	var skeleton := get_primary_skeleton()
+	if skeleton == null:
+		return 0
+	return skeleton.get_bone_count()
 
 
 func has_animation(action_name: String) -> bool:
@@ -179,6 +209,148 @@ func _write_animation_debug() -> void:
 		"action_candidates": ACTION_ANIMATION_CANDIDATES
 	}, "\t"))
 	file.close()
+
+
+func _write_skeleton_debug() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://outputs/logs"))
+	var file := FileAccess.open(SKELETON_DEBUG_PATH, FileAccess.WRITE)
+	if file == null:
+		push_warning("Failed to write skeleton debug log at %s." % SKELETON_DEBUG_PATH)
+		return
+	file.store_string(JSON.stringify(_build_skeleton_debug_report(), "\t"))
+	file.close()
+
+
+func _build_skeleton_debug_report() -> Dictionary:
+	var diagnosis: Array[String] = []
+	var skeleton_entries := _build_skeleton_entries()
+	var animation_tracks := _build_animation_track_entries(diagnosis)
+	if skeleton_entries.is_empty():
+		diagnosis.append("real_model has no Skeleton3D nodes; bone retargeting cannot start yet")
+	return {
+		"time": Time.get_datetime_string_from_system(false, true),
+		"body_mode": "real_model",
+		"skeletons": skeleton_entries,
+		"available_animations": get_animation_names(),
+		"animation_tracks": animation_tracks,
+		"diagnosis": diagnosis
+	}
+
+
+func _build_skeleton_entries() -> Array:
+	var entries := []
+	for skeleton in _get_skeletons():
+		entries.append({
+			"path": str(skeleton.get_path()),
+			"bone_count": skeleton.get_bone_count(),
+			"bones": _get_bone_names_for_skeleton(skeleton)
+		})
+	return entries
+
+
+func _build_animation_track_entries(diagnosis: Array[String]) -> Dictionary:
+	var entries := {}
+	if animation_player == null:
+		return entries
+	var skeleton_path_texts := []
+	for skeleton in _get_skeletons():
+		skeleton_path_texts.append(str(skeleton.get_path()))
+		skeleton_path_texts.append(str(animation_player.get_path_to(skeleton)))
+	for animation_name in get_animation_names():
+		var animation := animation_player.get_animation(animation_name)
+		if animation == null:
+			continue
+		var tracks := []
+		var has_root_track := false
+		var has_skeleton_track := false
+		for track_index in range(animation.get_track_count()):
+			var track_path := animation.track_get_path(track_index)
+			var path_text := str(track_path)
+			var track_type := animation.track_get_type(track_index)
+			var key_count := animation.track_get_key_count(track_index)
+			tracks.append({
+				"track_index": track_index,
+				"type": _track_type_name(track_type),
+				"type_id": track_type,
+				"path": path_text,
+				"path_text": path_text,
+				"key_count": key_count
+			})
+			if _is_root_transform_track(path_text):
+				has_root_track = true
+			if _is_skeleton_track(path_text, skeleton_path_texts):
+				has_skeleton_track = true
+		entries[animation_name] = tracks
+		if has_skeleton_track:
+			diagnosis.append("animation %s has skeleton/bone tracks" % animation_name)
+		elif has_root_track:
+			diagnosis.append("animation %s affects ModelRoot/root transform only, not skeleton bones" % animation_name)
+		elif tracks.is_empty():
+			diagnosis.append("animation %s has no tracks" % animation_name)
+		else:
+			diagnosis.append("animation %s has non-skeleton tracks" % animation_name)
+	return entries
+
+
+func _get_skeletons() -> Array[Skeleton3D]:
+	var skeletons: Array[Skeleton3D] = []
+	if model_root == null:
+		return skeletons
+	_collect_skeletons(model_root, skeletons)
+	return skeletons
+
+
+func _collect_skeletons(node: Node, skeletons: Array[Skeleton3D]) -> void:
+	if node is Skeleton3D:
+		skeletons.append(node)
+	for child in node.get_children():
+		_collect_skeletons(child, skeletons)
+
+
+func _get_bone_names_for_skeleton(skeleton: Skeleton3D) -> Array[String]:
+	var names: Array[String] = []
+	for bone_index in range(skeleton.get_bone_count()):
+		names.append(skeleton.get_bone_name(bone_index))
+	return names
+
+
+func _is_root_transform_track(path_text: String) -> bool:
+	var normalized := path_text.to_lower()
+	return normalized.begins_with("modelroot:") or normalized == "." or normalized.begins_with(".:")
+
+
+func _is_skeleton_track(path_text: String, skeleton_path_texts: Array) -> bool:
+	var normalized := path_text.to_lower()
+	if normalized.contains("skeleton") or normalized.contains("bone"):
+		return true
+	for skeleton_path in skeleton_path_texts:
+		var skeleton_text := str(skeleton_path).to_lower()
+		if not skeleton_text.is_empty() and normalized.contains(skeleton_text):
+			return true
+	return false
+
+
+func _track_type_name(track_type: int) -> String:
+	match track_type:
+		Animation.TYPE_VALUE:
+			return "value"
+		Animation.TYPE_POSITION_3D:
+			return "position_3d"
+		Animation.TYPE_ROTATION_3D:
+			return "rotation_3d"
+		Animation.TYPE_SCALE_3D:
+			return "scale_3d"
+		Animation.TYPE_BLEND_SHAPE:
+			return "blend_shape"
+		Animation.TYPE_METHOD:
+			return "method"
+		Animation.TYPE_BEZIER:
+			return "bezier"
+		Animation.TYPE_AUDIO:
+			return "audio"
+		Animation.TYPE_ANIMATION:
+			return "animation"
+	return "unknown"
 
 
 func _apply_material_textures(node: Node) -> void:
