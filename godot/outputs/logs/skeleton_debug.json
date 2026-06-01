@@ -78,6 +78,140 @@
 		"animation sit_stand affects ModelRoot/root transform only, not skeleton bones",
 		"animation wave affects ModelRoot/root transform only, not skeleton bones"
 	],
+	"key_bone_candidates_summary": {
+		"chest": {
+			"count": 6,
+			"names": [
+				"chestLower(drv)",
+				"chest",
+				"chest.twk",
+				"chestUpper(drv)",
+				"chest-1",
+				"chest-1.twk"
+			]
+		},
+		"head": {
+			"count": 3,
+			"names": [
+				"neckhead",
+				"head(drv)",
+				"head"
+			]
+		},
+		"hips": {
+			"count": 5,
+			"names": [
+				"hip(drv)",
+				"hip",
+				"pelvis(drv)",
+				"pelvis",
+				"pelvis.twk"
+			]
+		},
+		"left_foot": {
+			"count": 2,
+			"names": [
+				"lFoot(drv)",
+				"foot.L"
+			]
+		},
+		"left_hand": {
+			"count": 2,
+			"names": [
+				"hand.L",
+				"lHand(drv)"
+			]
+		},
+		"left_lower_arm": {
+			"count": 1,
+			"names": [
+				"forearm.L"
+			]
+		},
+		"left_lower_leg": {
+			"count": 2,
+			"names": [
+				"lShin(drv)",
+				"shin.L"
+			]
+		},
+		"left_upper_arm": {
+			"count": 1,
+			"names": [
+				"upper_arm.L"
+			]
+		},
+		"left_upper_leg": {
+			"count": 1,
+			"names": [
+				"thigh.L"
+			]
+		},
+		"neck": {
+			"count": 8,
+			"names": [
+				"neckLower(drv)",
+				"neckhead",
+				"neckParent",
+				"neck",
+				"neck.twk",
+				"neckUpper(drv)"
+			]
+		},
+		"right_foot": {
+			"count": 4,
+			"names": [
+				"rFoot(drv)",
+				"foot.R",
+				"foot.rev.L",
+				"foot.rev.R"
+			]
+		},
+		"right_hand": {
+			"count": 2,
+			"names": [
+				"hand.R",
+				"rHand(drv)"
+			]
+		},
+		"right_lower_arm": {
+			"count": 1,
+			"names": [
+				"forearm.R"
+			]
+		},
+		"right_lower_leg": {
+			"count": 2,
+			"names": [
+				"rShin(drv)",
+				"shin.R"
+			]
+		},
+		"right_upper_arm": {
+			"count": 1,
+			"names": [
+				"upper_arm.R"
+			]
+		},
+		"right_upper_leg": {
+			"count": 1,
+			"names": [
+				"thigh.R"
+			]
+		},
+		"spine": {
+			"count": 6,
+			"names": [
+				"abdomenLower(drv)",
+				"spine",
+				"spine.twk",
+				"abdomenUpper(drv)",
+				"spine-1",
+				"spine-1.twk"
+			]
+		}
+	},
+	"primary_skeleton_path": "/root/Main/RealBody/ModelRoot/Scarlet/Skeleton3D",
 	"skeletons": [
 		{
 			"bone_count": 603,
@@ -689,5 +823,5 @@
 			"path": "/root/Main/RealBody/ModelRoot/Scarlet/Skeleton3D"
 		}
 	],
-	"time": "2026-06-01 15:05:45"
+	"time": "2026-06-01 19:39:24"
 }

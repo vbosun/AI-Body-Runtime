@@ -5,6 +5,7 @@ const TEXTURE_DIR := "res://assets/characters/real_model/textures"
 const BASIC_ANIMATION_LIBRARY_PATH := "res://assets/generated/real_model/basic_animation_library.tres"
 const ANIMATION_DEBUG_PATH := "res://outputs/logs/animation_debug.json"
 const SKELETON_DEBUG_PATH := "res://outputs/logs/skeleton_debug.json"
+const BONE_MAPPING_CANDIDATES_PATH := "res://outputs/logs/bone_mapping_candidates.json"
 const BODY_MODES := ["placeholder", "real_model"]
 const BASE_COLOR_TEXTURES := {
 	"face": "Scarlet_Face_D.png",
@@ -35,6 +36,44 @@ const ACTION_ANIMATION_CANDIDATES := {
 	"stand_up": ["stand_up", "StandUp", "standing_up"],
 	"hold_cup": ["hold_cup", "HoldCup"]
 }
+const BONE_MAPPING_ROLES := [
+	"hips",
+	"spine",
+	"chest",
+	"neck",
+	"head",
+	"left_upper_arm",
+	"left_lower_arm",
+	"left_hand",
+	"right_upper_arm",
+	"right_lower_arm",
+	"right_hand",
+	"left_upper_leg",
+	"left_lower_leg",
+	"left_foot",
+	"right_upper_leg",
+	"right_lower_leg",
+	"right_foot"
+]
+const BONE_ROLE_KEYWORDS := {
+	"hips": ["hip", "hips", "pelvis"],
+	"spine": ["spine", "abdomen", "abdomenlower", "abdomenupper"],
+	"chest": ["chest", "upperchest", "thorax"],
+	"neck": ["neck"],
+	"head": ["head"],
+	"left_upper_arm": ["lupperarm", "leftupperarm", "l_upperarm", "upperarm_l", "arm_l", "upper_arm.l", "upper_arm_l", "upperarm.l"],
+	"left_lower_arm": ["lforearm", "leftforearm", "lowerarm_l", "forearm_l", "forearm.l"],
+	"left_hand": ["lhand", "lefthand", "hand_l", "hand.l"],
+	"right_upper_arm": ["rupperarm", "rightupperarm", "r_upperarm", "upperarm_r", "arm_r", "upper_arm.r", "upper_arm_r", "upperarm.r"],
+	"right_lower_arm": ["rforearm", "rightforearm", "lowerarm_r", "forearm_r", "forearm.r"],
+	"right_hand": ["rhand", "righthand", "hand_r", "hand.r"],
+	"left_upper_leg": ["lupperleg", "leftupperleg", "lthigh", "leftthigh", "upperleg_l", "thigh_l", "thigh.l"],
+	"left_lower_leg": ["llowerleg", "leftlowerleg", "lshin", "leftshin", "lowerleg_l", "shin_l", "shin.l", "calf_l"],
+	"left_foot": ["lfoot", "leftfoot", "foot_l", "foot.l"],
+	"right_upper_leg": ["rupperleg", "rightupperleg", "rthigh", "rightthigh", "upperleg_r", "thigh_r", "thigh.r"],
+	"right_lower_leg": ["rlowerleg", "rightlowerleg", "rshin", "rightshin", "lowerleg_r", "shin_r", "shin.r", "calf_r"],
+	"right_foot": ["rfoot", "rightfoot", "foot_r", "foot.r"]
+}
 
 var model_root: Node3D
 var animation_player: AnimationPlayer
@@ -64,6 +103,7 @@ func _ready() -> void:
 		_apply_material_textures(model_root)
 		_write_animation_debug()
 		_write_skeleton_debug()
+		_write_bone_mapping_candidates()
 	else:
 		push_warning("Real model GLB at %s did not generate a Node3D scene." % REAL_MODEL_PATH)
 
@@ -100,6 +140,13 @@ func get_bone_names() -> Array[String]:
 	if skeleton == null:
 		return []
 	return _get_bone_names_for_skeleton(skeleton)
+
+
+func find_bone_candidates(role_name: String) -> Array:
+	var skeleton := get_primary_skeleton()
+	if skeleton == null:
+		return []
+	return _find_bone_candidates_for_skeleton(skeleton, role_name)
 
 
 func get_bone_count() -> int:
@@ -221,15 +268,28 @@ func _write_skeleton_debug() -> void:
 	file.close()
 
 
+func _write_bone_mapping_candidates() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://outputs/logs"))
+	var file := FileAccess.open(BONE_MAPPING_CANDIDATES_PATH, FileAccess.WRITE)
+	if file == null:
+		push_warning("Failed to write bone mapping candidates log at %s." % BONE_MAPPING_CANDIDATES_PATH)
+		return
+	file.store_string(JSON.stringify(_build_bone_mapping_candidates_report(), "\t"))
+	file.close()
+
+
 func _build_skeleton_debug_report() -> Dictionary:
 	var diagnosis: Array[String] = []
 	var skeleton_entries := _build_skeleton_entries()
 	var animation_tracks := _build_animation_track_entries(diagnosis)
+	var primary_skeleton := get_primary_skeleton()
 	if skeleton_entries.is_empty():
 		diagnosis.append("real_model has no Skeleton3D nodes; bone retargeting cannot start yet")
 	return {
 		"time": Time.get_datetime_string_from_system(false, true),
 		"body_mode": "real_model",
+		"primary_skeleton_path": "" if primary_skeleton == null else str(primary_skeleton.get_path()),
+		"key_bone_candidates_summary": _build_key_bone_candidates_summary(),
 		"skeletons": skeleton_entries,
 		"available_animations": get_animation_names(),
 		"animation_tracks": animation_tracks,
@@ -290,6 +350,105 @@ func _build_animation_track_entries(diagnosis: Array[String]) -> Dictionary:
 		else:
 			diagnosis.append("animation %s has non-skeleton tracks" % animation_name)
 	return entries
+
+
+func _build_bone_mapping_candidates_report() -> Dictionary:
+	var diagnosis: Array[String] = []
+	var skeleton := get_primary_skeleton()
+	var skeleton_path := ""
+	var bone_count := 0
+	var all_bones_sample := []
+	if skeleton == null:
+		diagnosis.append("real_model has no primary Skeleton3D; bone mapping candidates are unavailable")
+	else:
+		skeleton_path = str(skeleton.get_path())
+		bone_count = skeleton.get_bone_count()
+		all_bones_sample = _build_all_bones_sample(skeleton, 80)
+	var roles := {}
+	for role_name in BONE_MAPPING_ROLES:
+		var candidates := _find_bone_candidates_for_skeleton(skeleton, role_name)
+		roles[role_name] = {
+			"keywords": BONE_ROLE_KEYWORDS.get(role_name, []),
+			"candidates": candidates
+		}
+		if candidates.is_empty():
+			diagnosis.append("no candidates found for %s" % role_name)
+	return {
+		"time": Time.get_datetime_string_from_system(false, true),
+		"skeleton_path": skeleton_path,
+		"bone_count": bone_count,
+		"roles": roles,
+		"all_bones_sample": all_bones_sample,
+		"diagnosis": diagnosis
+	}
+
+
+func _build_key_bone_candidates_summary() -> Dictionary:
+	var summary := {}
+	for role_name in BONE_MAPPING_ROLES:
+		var names := []
+		var candidates := find_bone_candidates(role_name)
+		for candidate in candidates.slice(0, 6):
+			names.append(str(candidate.get("name", "")))
+		summary[role_name] = {
+			"count": candidates.size(),
+			"names": names
+		}
+	return summary
+
+
+func _build_all_bones_sample(skeleton: Skeleton3D, limit: int) -> Array:
+	var sample := []
+	if skeleton == null:
+		return sample
+	var count = min(skeleton.get_bone_count(), limit)
+	for bone_index in range(count):
+		sample.append(_build_bone_entry(skeleton, bone_index))
+	return sample
+
+
+func _find_bone_candidates_for_skeleton(skeleton: Skeleton3D, role_name: String) -> Array:
+	var candidates := []
+	if skeleton == null:
+		return candidates
+	var keywords: Array = BONE_ROLE_KEYWORDS.get(role_name, [])
+	if keywords.is_empty():
+		return candidates
+	for bone_index in range(skeleton.get_bone_count()):
+		var bone_name := skeleton.get_bone_name(bone_index)
+		if _bone_name_matches_keywords(bone_name, keywords):
+			candidates.append(_build_bone_entry(skeleton, bone_index))
+	return candidates
+
+
+func _build_bone_entry(skeleton: Skeleton3D, bone_index: int) -> Dictionary:
+	var parent_index := skeleton.get_bone_parent(bone_index)
+	var parent_name := ""
+	if parent_index >= 0:
+		parent_name = skeleton.get_bone_name(parent_index)
+	return {
+		"index": bone_index,
+		"name": skeleton.get_bone_name(bone_index),
+		"parent": parent_name
+	}
+
+
+func _bone_name_matches_keywords(bone_name: String, keywords: Array) -> bool:
+	var lowered := bone_name.to_lower()
+	var compact := _compact_bone_token(lowered)
+	for keyword in keywords:
+		var keyword_text := str(keyword).to_lower()
+		if lowered.contains(keyword_text):
+			return true
+		if ["arm_l", "arm_r"].has(keyword_text):
+			continue
+		if compact.contains(_compact_bone_token(keyword_text)):
+			return true
+	return false
+
+
+func _compact_bone_token(value: String) -> String:
+	return value.replace("_", "").replace("-", "").replace(".", "").replace(" ", "")
 
 
 func _get_skeletons() -> Array[Skeleton3D]:

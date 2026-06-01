@@ -248,6 +248,26 @@ def dump_skeleton_debug(project_dir: Path) -> bool:
     return True
 
 
+def dump_bone_mapping(project_dir: Path) -> bool:
+    mapping_path = project_dir / "outputs" / "logs" / "bone_mapping_candidates.json"
+    if not mapping_path.exists():
+        print(f"Missing bone mapping candidates log: {mapping_path}", file=sys.stderr)
+        return False
+    data = json.loads(mapping_path.read_text(encoding="utf-8"))
+    roles = data.get("roles", {})
+
+    print(f"bone_mapping: skeleton_path={data.get('skeleton_path')}")
+    print(f"bone_mapping: bone_count={data.get('bone_count')}")
+    for role_name in ["right_upper_arm", "right_lower_arm", "right_hand", "head"]:
+        candidates = roles.get(role_name, {}).get("candidates", [])
+        preview = ", ".join(
+            f"{candidate.get('index')}:{candidate.get('name')}"
+            for candidate in candidates[:8]
+        )
+        print(f"bone_mapping: {role_name} candidates=[{preview}]")
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run AI Body Runtime MVP action tests.")
     parser.add_argument("--project-dir", type=Path, default=default_project_dir())
@@ -268,6 +288,11 @@ def main() -> int:
         "--dump-skeleton-debug",
         action="store_true",
         help="Require and print outputs/logs/skeleton_debug.json after the run.",
+    )
+    parser.add_argument(
+        "--dump-bone-mapping",
+        action="store_true",
+        help="Require and print outputs/logs/bone_mapping_candidates.json after the run.",
     )
     parser.add_argument("--timeout", type=float, default=30.0)
     args = parser.parse_args()
@@ -368,6 +393,8 @@ def main() -> int:
                     print(state, file=sys.stderr)
                     return 1
         if args.dump_skeleton_debug and not dump_skeleton_debug(args.project_dir):
+            return 1
+        if args.dump_bone_mapping and not dump_bone_mapping(args.project_dir):
             return 1
     finally:
         if process is not None:

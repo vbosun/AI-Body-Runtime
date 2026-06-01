@@ -172,3 +172,21 @@ The runtime writes `godot/outputs/logs/skeleton_debug.json` with:
 - bone counts and bone names
 - every animation track path and key count
 - diagnosis lines that call out root-only tracks versus skeleton/bone tracks
+
+## Bone Mapping Candidates
+
+Bone mapping is the bridge between a generic action such as `wave` and the exact bones imported from a specific GLB. The runtime needs candidate names for roles such as `head`, `right_upper_arm`, `right_lower_arm`, and `right_hand` before it can create procedural bone animation safely.
+
+V0.8 intentionally does not perform full BVH retargeting and does not download or add new animation assets. It only analyzes the primary `Skeleton3D`, lowercases bone names, matches role keywords, and writes:
+
+```text
+godot/outputs/logs/bone_mapping_candidates.json
+```
+
+Use:
+
+```powershell
+python client\python\test_action.py --launch-runtime --expect-animation wave --dump-skeleton-debug --dump-bone-mapping
+```
+
+The `wave` fixture currently targets `ModelRoot:rotation_degrees`, so it rotates the imported model root rather than the arm bones. After the right arm candidates are reviewed, the next step is a procedural wave that targets the selected right upper arm, lower arm, and hand bones.

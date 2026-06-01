@@ -1,0 +1,836 @@
+{
+	"all_bones_sample": [
+		{
+			"index": 0,
+			"name": "hip(drv)",
+			"parent": ""
+		},
+		{
+			"index": 1,
+			"name": "master",
+			"parent": ""
+		},
+		{
+			"index": 2,
+			"name": "hip",
+			"parent": "master"
+		},
+		{
+			"index": 3,
+			"name": "pelvis(drv)",
+			"parent": "hip"
+		},
+		{
+			"index": 4,
+			"name": "abdomenLower(drv)",
+			"parent": "hip"
+		},
+		{
+			"index": 5,
+			"name": "spine",
+			"parent": "hip"
+		},
+		{
+			"index": 6,
+			"name": "spine.twk",
+			"parent": "spine"
+		},
+		{
+			"index": 7,
+			"name": "abdomenUpper(drv)",
+			"parent": "spine.twk"
+		},
+		{
+			"index": 8,
+			"name": "spine-1",
+			"parent": "spine"
+		},
+		{
+			"index": 9,
+			"name": "spine-1.twk",
+			"parent": "spine-1"
+		},
+		{
+			"index": 10,
+			"name": "chestLower(drv)",
+			"parent": "spine-1.twk"
+		},
+		{
+			"index": 11,
+			"name": "chest",
+			"parent": "spine-1"
+		},
+		{
+			"index": 12,
+			"name": "chest.twk",
+			"parent": "chest"
+		},
+		{
+			"index": 13,
+			"name": "chestUpper(drv)",
+			"parent": "chest.twk"
+		},
+		{
+			"index": 14,
+			"name": "lPectoral(drv)",
+			"parent": "chest.twk"
+		},
+		{
+			"index": 15,
+			"name": "rPectoral(drv)",
+			"parent": "chest.twk"
+		},
+		{
+			"index": 16,
+			"name": "pectoral.L",
+			"parent": "chest.twk"
+		},
+		{
+			"index": 17,
+			"name": "lBreast",
+			"parent": "pectoral.L"
+		},
+		{
+			"index": 18,
+			"name": "lAreola(drv)",
+			"parent": "lBreast"
+		},
+		{
+			"index": 19,
+			"name": "lAreola",
+			"parent": "lBreast"
+		},
+		{
+			"index": 20,
+			"name": "lNipple(drv)",
+			"parent": "lAreola"
+		},
+		{
+			"index": 21,
+			"name": "lNipple",
+			"parent": "lAreola"
+		},
+		{
+			"index": 22,
+			"name": "pectoral.R",
+			"parent": "chest.twk"
+		},
+		{
+			"index": 23,
+			"name": "rBreast",
+			"parent": "pectoral.R"
+		},
+		{
+			"index": 24,
+			"name": "rAreola(drv)",
+			"parent": "rBreast"
+		},
+		{
+			"index": 25,
+			"name": "rAreola",
+			"parent": "rBreast"
+		},
+		{
+			"index": 26,
+			"name": "rNipple(drv)",
+			"parent": "rAreola"
+		},
+		{
+			"index": 27,
+			"name": "rNipple",
+			"parent": "rAreola"
+		},
+		{
+			"index": 28,
+			"name": "chest-1",
+			"parent": "chest"
+		},
+		{
+			"index": 29,
+			"name": "chest-1.twk",
+			"parent": "chest-1"
+		},
+		{
+			"index": 30,
+			"name": "lCollar(drv)",
+			"parent": "chest-1.twk"
+		},
+		{
+			"index": 31,
+			"name": "rCollar(drv)",
+			"parent": "chest-1.twk"
+		},
+		{
+			"index": 32,
+			"name": "neckLower(drv)",
+			"parent": "chest-1.twk"
+		},
+		{
+			"index": 33,
+			"name": "clavicle.L",
+			"parent": "chest-1"
+		},
+		{
+			"index": 34,
+			"name": "armSocket.L",
+			"parent": "clavicle.L"
+		},
+		{
+			"index": 35,
+			"name": "elbowPoleA.L",
+			"parent": "armSocket.L"
+		},
+		{
+			"index": 36,
+			"name": "clavicle.R",
+			"parent": "chest-1"
+		},
+		{
+			"index": 37,
+			"name": "armSocket.R",
+			"parent": "clavicle.R"
+		},
+		{
+			"index": 38,
+			"name": "elbowPoleA.R",
+			"parent": "armSocket.R"
+		},
+		{
+			"index": 39,
+			"name": "neckhead",
+			"parent": "chest-1"
+		},
+		{
+			"index": 40,
+			"name": "neckParent",
+			"parent": "chest-1"
+		},
+		{
+			"index": 41,
+			"name": "neck",
+			"parent": "neckParent"
+		},
+		{
+			"index": 42,
+			"name": "neck.twk",
+			"parent": "neck"
+		},
+		{
+			"index": 43,
+			"name": "neckUpper(drv)",
+			"parent": "neck.twk"
+		},
+		{
+			"index": 44,
+			"name": "neck-1",
+			"parent": "neck"
+		},
+		{
+			"index": 45,
+			"name": "neck-1.twk",
+			"parent": "neck-1"
+		},
+		{
+			"index": 46,
+			"name": "head(drv)",
+			"parent": "neck-1.twk"
+		},
+		{
+			"index": 47,
+			"name": "head",
+			"parent": "neck-1"
+		},
+		{
+			"index": 48,
+			"name": "upperTeeth",
+			"parent": "head"
+		},
+		{
+			"index": 49,
+			"name": "lowerJaw(drv)",
+			"parent": "head"
+		},
+		{
+			"index": 50,
+			"name": "upperFaceRig",
+			"parent": "head"
+		},
+		{
+			"index": 51,
+			"name": "rBrowInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 52,
+			"name": "rBrowMid(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 53,
+			"name": "rBrowOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 54,
+			"name": "lBrowInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 55,
+			"name": "lBrowMid(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 56,
+			"name": "lBrowOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 57,
+			"name": "CenterBrow(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 58,
+			"name": "MidNoseBridge(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 59,
+			"name": "lEyelidInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 60,
+			"name": "lEyelidUpperInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 61,
+			"name": "lEyelidUpper(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 62,
+			"name": "lEyelidUpperOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 63,
+			"name": "lEyelidOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 64,
+			"name": "lEyelidLowerOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 65,
+			"name": "lEyelidLower(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 66,
+			"name": "lEyelidLowerInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 67,
+			"name": "rEyelidInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 68,
+			"name": "rEyelidUpperInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 69,
+			"name": "rEyelidUpper(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 70,
+			"name": "rEyelidUpperOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 71,
+			"name": "rEyelidOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 72,
+			"name": "rEyelidLowerOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 73,
+			"name": "rEyelidLower(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 74,
+			"name": "rEyelidLowerInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 75,
+			"name": "lSquintInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 76,
+			"name": "lSquintOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 77,
+			"name": "rSquintInner(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 78,
+			"name": "rSquintOuter(drv)",
+			"parent": "upperFaceRig"
+		},
+		{
+			"index": 79,
+			"name": "lCheekUpper(drv)",
+			"parent": "upperFaceRig"
+		}
+	],
+	"bone_count": 603,
+	"diagnosis": [],
+	"roles": {
+		"chest": {
+			"candidates": [
+				{
+					"index": 10,
+					"name": "chestLower(drv)",
+					"parent": "spine-1.twk"
+				},
+				{
+					"index": 11,
+					"name": "chest",
+					"parent": "spine-1"
+				},
+				{
+					"index": 12,
+					"name": "chest.twk",
+					"parent": "chest"
+				},
+				{
+					"index": 13,
+					"name": "chestUpper(drv)",
+					"parent": "chest.twk"
+				},
+				{
+					"index": 28,
+					"name": "chest-1",
+					"parent": "chest"
+				},
+				{
+					"index": 29,
+					"name": "chest-1.twk",
+					"parent": "chest-1"
+				}
+			],
+			"keywords": [
+				"chest",
+				"upperchest",
+				"thorax"
+			]
+		},
+		"head": {
+			"candidates": [
+				{
+					"index": 39,
+					"name": "neckhead",
+					"parent": "chest-1"
+				},
+				{
+					"index": 46,
+					"name": "head(drv)",
+					"parent": "neck-1.twk"
+				},
+				{
+					"index": 47,
+					"name": "head",
+					"parent": "neck-1"
+				}
+			],
+			"keywords": [
+				"head"
+			]
+		},
+		"hips": {
+			"candidates": [
+				{
+					"index": 0,
+					"name": "hip(drv)",
+					"parent": ""
+				},
+				{
+					"index": 2,
+					"name": "hip",
+					"parent": "master"
+				},
+				{
+					"index": 3,
+					"name": "pelvis(drv)",
+					"parent": "hip"
+				},
+				{
+					"index": 232,
+					"name": "pelvis",
+					"parent": "hip"
+				},
+				{
+					"index": 233,
+					"name": "pelvis.twk",
+					"parent": "pelvis"
+				}
+			],
+			"keywords": [
+				"hip",
+				"hips",
+				"pelvis"
+			]
+		},
+		"left_foot": {
+			"candidates": [
+				{
+					"index": 411,
+					"name": "lFoot(drv)",
+					"parent": "shin.twk.L"
+				},
+				{
+					"index": 412,
+					"name": "foot.L",
+					"parent": "shin.L"
+				}
+			],
+			"keywords": [
+				"lfoot",
+				"leftfoot",
+				"foot_l",
+				"foot.l"
+			]
+		},
+		"left_hand": {
+			"candidates": [
+				{
+					"index": 326,
+					"name": "hand.L",
+					"parent": "forearm.L"
+				},
+				{
+					"index": 380,
+					"name": "lHand(drv)",
+					"parent": "forearm.twist.L"
+				}
+			],
+			"keywords": [
+				"lhand",
+				"lefthand",
+				"hand_l",
+				"hand.l"
+			]
+		},
+		"left_lower_arm": {
+			"candidates": [
+				{
+					"index": 325,
+					"name": "forearm.L",
+					"parent": "upper_arm.L"
+				}
+			],
+			"keywords": [
+				"lforearm",
+				"leftforearm",
+				"lowerarm_l",
+				"forearm_l",
+				"forearm.l"
+			]
+		},
+		"left_lower_leg": {
+			"candidates": [
+				{
+					"index": 401,
+					"name": "lShin(drv)",
+					"parent": "thigh.twist.L"
+				},
+				{
+					"index": 409,
+					"name": "shin.L",
+					"parent": "thigh.L"
+				}
+			],
+			"keywords": [
+				"llowerleg",
+				"leftlowerleg",
+				"lshin",
+				"leftshin",
+				"lowerleg_l",
+				"shin_l",
+				"shin.l",
+				"calf_l"
+			]
+		},
+		"left_upper_arm": {
+			"candidates": [
+				{
+					"index": 323,
+					"name": "upper_arm.L",
+					"parent": "arm_parent.L"
+				}
+			],
+			"keywords": [
+				"lupperarm",
+				"leftupperarm",
+				"l_upperarm",
+				"upperarm_l",
+				"arm_l",
+				"upper_arm.l",
+				"upper_arm_l",
+				"upperarm.l"
+			]
+		},
+		"left_upper_leg": {
+			"candidates": [
+				{
+					"index": 404,
+					"name": "thigh.L",
+					"parent": "leg_parent.L"
+				}
+			],
+			"keywords": [
+				"lupperleg",
+				"leftupperleg",
+				"lthigh",
+				"leftthigh",
+				"upperleg_l",
+				"thigh_l",
+				"thigh.l"
+			]
+		},
+		"neck": {
+			"candidates": [
+				{
+					"index": 32,
+					"name": "neckLower(drv)",
+					"parent": "chest-1.twk"
+				},
+				{
+					"index": 39,
+					"name": "neckhead",
+					"parent": "chest-1"
+				},
+				{
+					"index": 40,
+					"name": "neckParent",
+					"parent": "chest-1"
+				},
+				{
+					"index": 41,
+					"name": "neck",
+					"parent": "neckParent"
+				},
+				{
+					"index": 42,
+					"name": "neck.twk",
+					"parent": "neck"
+				},
+				{
+					"index": 43,
+					"name": "neckUpper(drv)",
+					"parent": "neck.twk"
+				},
+				{
+					"index": 44,
+					"name": "neck-1",
+					"parent": "neck"
+				},
+				{
+					"index": 45,
+					"name": "neck-1.twk",
+					"parent": "neck-1"
+				}
+			],
+			"keywords": [
+				"neck"
+			]
+		},
+		"right_foot": {
+			"candidates": [
+				{
+					"index": 541,
+					"name": "rFoot(drv)",
+					"parent": "shin.twk.R"
+				},
+				{
+					"index": 542,
+					"name": "foot.R",
+					"parent": "shin.R"
+				},
+				{
+					"index": 586,
+					"name": "foot.rev.L",
+					"parent": "toe.rev.L"
+				},
+				{
+					"index": 593,
+					"name": "foot.rev.R",
+					"parent": "toe.rev.R"
+				}
+			],
+			"keywords": [
+				"rfoot",
+				"rightfoot",
+				"foot_r",
+				"foot.r"
+			]
+		},
+		"right_hand": {
+			"candidates": [
+				{
+					"index": 456,
+					"name": "hand.R",
+					"parent": "forearm.R"
+				},
+				{
+					"index": 510,
+					"name": "rHand(drv)",
+					"parent": "forearm.twist.R"
+				}
+			],
+			"keywords": [
+				"rhand",
+				"righthand",
+				"hand_r",
+				"hand.r"
+			]
+		},
+		"right_lower_arm": {
+			"candidates": [
+				{
+					"index": 455,
+					"name": "forearm.R",
+					"parent": "upper_arm.R"
+				}
+			],
+			"keywords": [
+				"rforearm",
+				"rightforearm",
+				"lowerarm_r",
+				"forearm_r",
+				"forearm.r"
+			]
+		},
+		"right_lower_leg": {
+			"candidates": [
+				{
+					"index": 531,
+					"name": "rShin(drv)",
+					"parent": "thigh.twist.R"
+				},
+				{
+					"index": 539,
+					"name": "shin.R",
+					"parent": "thigh.R"
+				}
+			],
+			"keywords": [
+				"rlowerleg",
+				"rightlowerleg",
+				"rshin",
+				"rightshin",
+				"lowerleg_r",
+				"shin_r",
+				"shin.r",
+				"calf_r"
+			]
+		},
+		"right_upper_arm": {
+			"candidates": [
+				{
+					"index": 454,
+					"name": "upper_arm.R",
+					"parent": "arm_parent.R"
+				}
+			],
+			"keywords": [
+				"rupperarm",
+				"rightupperarm",
+				"r_upperarm",
+				"upperarm_r",
+				"arm_r",
+				"upper_arm.r",
+				"upper_arm_r",
+				"upperarm.r"
+			]
+		},
+		"right_upper_leg": {
+			"candidates": [
+				{
+					"index": 534,
+					"name": "thigh.R",
+					"parent": "leg_parent.R"
+				}
+			],
+			"keywords": [
+				"rupperleg",
+				"rightupperleg",
+				"rthigh",
+				"rightthigh",
+				"upperleg_r",
+				"thigh_r",
+				"thigh.r"
+			]
+		},
+		"spine": {
+			"candidates": [
+				{
+					"index": 4,
+					"name": "abdomenLower(drv)",
+					"parent": "hip"
+				},
+				{
+					"index": 5,
+					"name": "spine",
+					"parent": "hip"
+				},
+				{
+					"index": 6,
+					"name": "spine.twk",
+					"parent": "spine"
+				},
+				{
+					"index": 7,
+					"name": "abdomenUpper(drv)",
+					"parent": "spine.twk"
+				},
+				{
+					"index": 8,
+					"name": "spine-1",
+					"parent": "spine"
+				},
+				{
+					"index": 9,
+					"name": "spine-1.twk",
+					"parent": "spine-1"
+				}
+			],
+			"keywords": [
+				"spine",
+				"abdomen",
+				"abdomenlower",
+				"abdomenupper"
+			]
+		}
+	},
+	"skeleton_path": "/root/Main/RealBody/ModelRoot/Scarlet/Skeleton3D",
+	"time": "2026-06-01 19:39:24"
+}

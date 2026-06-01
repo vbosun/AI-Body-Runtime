@@ -234,3 +234,23 @@ godot/outputs/logs/skeleton_debug.json
 ```
 
 That file lists detected `Skeleton3D` nodes, bone names, animation track paths, and diagnosis lines such as `animation wave affects ModelRoot/root transform only, not skeleton bones`.
+
+## V0.8 Bone Mapping Candidates
+
+Before the runtime can procedurally move a real arm, it needs to know which imported bones are likely to represent the hips, torso, head, arms, hands, legs, and feet. Different GLB exporters use different names, so V0.8 does not attempt full BVH retargeting. It only scans the primary `Skeleton3D` bone names, applies lowercase keyword matching, and writes a reviewable candidate report.
+
+Run:
+
+```powershell
+python client\python\test_action.py --launch-runtime --expect-animation wave --dump-skeleton-debug --dump-bone-mapping
+```
+
+The runtime writes:
+
+```text
+godot/outputs/logs/bone_mapping_candidates.json
+```
+
+The report includes the primary skeleton path, bone count, candidate bones per role, a sample of all bones, and diagnosis lines for roles with no match. `skeleton_debug.json` also includes `primary_skeleton_path` and `key_bone_candidates_summary`.
+
+The current `wave` fixture still rotates `ModelRoot:rotation_degrees`; it proves the Action Slot Animation Adapter path, but it is not skeletal arm motion. The next step is to use the `right_upper_arm`, `right_lower_arm`, and `right_hand` candidates as inputs for a procedural right-arm wave animation.
