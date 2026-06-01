@@ -66,10 +66,6 @@ TEST_INTENTS = [
                 "action_source": "placeholder_transform",
                 "animation_name": "none",
             },
-            "real_model": {
-                "action_source": "profile_fallback",
-                "animation_name": "none",
-            },
         },
     },
     {
@@ -195,7 +191,11 @@ def main() -> int:
     try:
         for command in TEST_INTENTS:
             state = client.send_intent(command["id"], command["intent"])
-            print(f"{command['id']}: ok={state['ok']} pose={state['state']['pose']} screenshot={state['screenshot_path']}")
+            print(
+                f"{command['id']}: ok={state['ok']} pose={state['state']['pose']} "
+                f"source={state['state'].get('action_source')} animation={state['state'].get('animation_name')} "
+                f"screenshot={state['screenshot_path']}"
+            )
             if not state["ok"]:
                 print(state, file=sys.stderr)
                 return 1
@@ -204,9 +204,26 @@ def main() -> int:
                 print(f"Missing screenshot: {screenshot_path}", file=sys.stderr)
                 return 1
             body_mode = state["state"].get("body_mode")
-            if "action_source" not in state["state"] or "animation_name" not in state["state"]:
+            if (
+                "action_source" not in state["state"]
+                or "animation_name" not in state["state"]
+                or "available_animations" not in state["state"]
+            ):
                 print(f"Missing action adapter fields in state: {state}", file=sys.stderr)
                 return 1
+            if not isinstance(state["state"]["available_animations"], list):
+                print(f"available_animations must be a list: {state}", file=sys.stderr)
+                return 1
+            if body_mode == "placeholder":
+                source = state["state"].get("action_source")
+                if command["intent"]["action"] in {"look_at_user", "attach_prop"}:
+                    expected_sources = {"programmatic"}
+                else:
+                    expected_sources = {"placeholder_transform"}
+                if source not in expected_sources:
+                    print(f"Unexpected placeholder action_source={source}", file=sys.stderr)
+                    print(state, file=sys.stderr)
+                    return 1
             mode_expectations = command.get("expect_by_body_mode", {}).get(body_mode, {})
             for field_name, expected_value in mode_expectations.items():
                 actual = state["state"].get(field_name)

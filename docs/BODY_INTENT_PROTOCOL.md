@@ -108,6 +108,7 @@ Example:
     "action": "wave",
     "action_source": "placeholder_transform",
     "animation_name": "none",
+    "available_animations": [],
     "expression": "smile",
     "holding": "none",
     "attached_prop": "bucket",
@@ -128,6 +129,17 @@ Example:
   "errors": []
 }
 ```
+
+`action_source` describes how the slot was executed:
+
+- `placeholder_transform`: placeholder mode primitive transforms
+- `animation`: real model animation clip played successfully
+- `profile_fallback`: real model had no matching animation, so profile transforms were used
+- `programmatic`: runtime-controlled actions such as `look_at_user` or `attach_prop`
+
+`animation_name` is the actual clip name when `action_source` is `animation`; otherwise it is `none`. `available_animations` lists animation names detected on the current real model and can be an empty array.
+
+Real model animations may come from model-bundled clips, Mixamo/FBX action libraries, BVH motion capture, Blender-authored clips, or later local private animation packs. Recommended clip names include `idle`, `wave`, `sit_chair` or `sit_down`, `stand_up`, and `hold_cup`. If no clip exists, the protocol still succeeds through fallback behavior.
 
 ## Consistency Rules
 

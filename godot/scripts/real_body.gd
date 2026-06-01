@@ -22,6 +22,13 @@ const BASE_COLOR_TEXTURES := {
 	"eyemoisture": "Scarlet_Eyes_D.jpg",
 	"eyesocket": "Scarlet_Eyes_D.jpg"
 }
+const ACTION_ANIMATION_CANDIDATES := {
+	"idle": ["idle", "Idle"],
+	"wave": ["wave", "Wave", "waving", "Waving"],
+	"sit_chair": ["sit_chair", "sit_down", "Sit", "SitDown", "Sitting"],
+	"stand_up": ["stand_up", "StandUp", "standing_up"],
+	"hold_cup": ["hold_cup", "HoldCup"]
+}
 
 var model_root: Node3D
 var animation_player: AnimationPlayer
@@ -55,14 +62,33 @@ func has_model() -> bool:
 	return model_root != null
 
 
+func get_animation_names() -> Array[String]:
+	var names: Array[String] = []
+	if animation_player == null:
+		return names
+	for animation_name in animation_player.get_animation_list():
+		names.append(str(animation_name))
+	return names
+
+
 func has_animation(action_name: String) -> bool:
-	return animation_player != null and animation_player.has_animation(action_name)
+	return not get_action_animation_name(action_name).is_empty()
+
+
+func get_action_animation_name(action_name: String) -> String:
+	if animation_player == null:
+		return ""
+	for animation_name in ACTION_ANIMATION_CANDIDATES.get(action_name, [action_name]):
+		if animation_player.has_animation(animation_name):
+			return animation_name
+	return ""
 
 
 func play_action_animation(action_name: String) -> bool:
-	if not has_animation(action_name):
+	var animation_name := get_action_animation_name(action_name)
+	if animation_name.is_empty():
 		return false
-	animation_player.play(action_name)
+	animation_player.play(animation_name)
 	return true
 
 

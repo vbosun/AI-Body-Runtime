@@ -123,14 +123,14 @@ V0.3 does not implement:
 
 ## Animation Naming
 
-V0.4 introduces an action slot adapter for real models. If the loaded GLB contains an `AnimationPlayer`, the runtime looks for animations with these exact names:
+V0.4 introduces an action slot adapter for real models. If the loaded GLB contains an `AnimationPlayer`, the runtime checks candidate animation names for each action slot and plays the first match. Recommended animation names:
 
 - `idle`
-- `look_at_user`
 - `wave`
-- `sit_chair`
+- `sit_chair` or `sit_down`
 - `stand_up`
 - `hold_cup`
-- `attach_prop`
 
-When an animation exists, BodyState reports `action_source: "animation"` and `animation_name` as the action name. When it does not exist, BodyState reports `action_source: "profile_fallback"` and `animation_name: "none"`.
+Animation sources can come from the model itself, Mixamo or FBX action libraries, BVH motion capture, Blender-authored poses or animations, or later local private animation packs. Users do not need to hand-author animations for the runtime to work: when an animation exists, BodyState reports `action_source: "animation"` and the actual `animation_name`; when it does not exist, BodyState reports `action_source: "profile_fallback"` and `animation_name: "none"`.
+
+Keep real models, third-party animation files, generated texture files, and private animation packs out of git. Store them under gitignored local asset directories.

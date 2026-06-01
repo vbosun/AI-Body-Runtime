@@ -93,6 +93,7 @@ var current_state := {
 	"action": "idle",
 	"action_source": "placeholder_transform",
 	"animation_name": "none",
+	"available_animations": [],
 	"expression": "neutral",
 	"holding": "none",
 	"attached_prop": "none",
@@ -277,10 +278,27 @@ func _normalize_enum(intent: Dictionary, key: String, allowed: Array, fallback: 
 
 func _apply_action(action: String) -> void:
 	current_state["animation_name"] = "none"
+	current_state["available_animations"] = _get_available_animations()
+	if action == "look_at_user" or action == "attach_prop":
+		await _apply_programmatic_action(action)
+		return
 	if body_mode == "real_model":
 		await _apply_real_model_action(action)
 	else:
 		await _apply_placeholder_action(action)
+
+
+func _apply_programmatic_action(action: String) -> void:
+	current_state["action_source"] = "programmatic"
+	current_state["animation_name"] = "none"
+	_reset_body_pose()
+	match action:
+		"look_at_user":
+			_head_look_at_user()
+			current_state["pose"] = "looking_at_user"
+		"attach_prop":
+			current_state["pose"] = "attaching_prop"
+	await get_tree().create_timer(0.2).timeout
 
 
 func _apply_placeholder_action(action: String) -> void:
@@ -317,9 +335,10 @@ func _apply_placeholder_action(action: String) -> void:
 
 func _apply_real_model_action(action: String) -> void:
 	_reset_body_pose()
+	var animation_name := _get_real_model_animation_name(action)
 	if _play_real_model_animation(action):
 		current_state["action_source"] = "animation"
-		current_state["animation_name"] = action
+		current_state["animation_name"] = animation_name
 		current_state["pose"] = _pose_for_action(action)
 		await get_tree().create_timer(0.25).timeout
 		return
@@ -330,6 +349,20 @@ func _apply_real_model_action(action: String) -> void:
 
 func _play_real_model_animation(action: String) -> bool:
 	return real_body.has_method("play_action_animation") and real_body.call("play_action_animation", action)
+
+
+func _get_real_model_animation_name(action: String) -> String:
+	if real_body.has_method("get_action_animation_name"):
+		var animation_name := str(real_body.call("get_action_animation_name", action))
+		if not animation_name.is_empty():
+			return animation_name
+	return action
+
+
+func _get_available_animations() -> Array:
+	if body_mode == "real_model" and real_body.has_method("get_animation_names"):
+		return real_body.call("get_animation_names")
+	return []
 
 
 func _apply_real_model_profile_fallback(action: String) -> void:
@@ -583,6 +616,7 @@ func _capture_screenshot(id: String, errors: Array[String]) -> String:
 
 
 func _write_state_atomic(id: String, ok: bool, screenshot_path: String, errors: Array, command: Dictionary = {}, normalized_intent: Dictionary = {}) -> void:
+	current_state["available_animations"] = _get_available_animations()
 	var response := {
 		"id": id,
 		"ok": ok,

@@ -165,25 +165,26 @@ The runtime uses an in-code body profile for each body mode. The real model prof
 - `sit_chair` position and rotation
 - prop/socket offsets for `cup/right_hand` and `bucket/head`
 
-## Real Model Animation Naming
+## Action Slot Animation Adapter
 
 V0.4 adds an action slot adapter. In `real_model` mode, the runtime first looks for an `AnimationPlayer` inside the loaded GLB scene and tries to play an animation with the same name as the BodyIntent action:
 
 - `idle`
-- `look_at_user`
 - `wave`
 - `sit_chair`
 - `stand_up`
 - `hold_cup`
-- `attach_prop`
+
+The adapter accepts common candidate names such as `Wave`, `sit_down`, `SitDown`, `Sitting`, and `HoldCup`; animation names do not have to exactly match the action slot. `look_at_user` and `attach_prop` are treated as programmatic actions because gaze and socket attachment are runtime systems.
 
 If no matching animation exists, the runtime uses the real model profile fallback and reports:
 
 ```json
 {
   "action_source": "profile_fallback",
-  "animation_name": "none"
+  "animation_name": "none",
+  "available_animations": []
 }
 ```
 
-Placeholder mode continues to use primitive transforms and reports `action_source: "placeholder_transform"`.
+Placeholder mode continues to use primitive transforms and reports `action_source: "placeholder_transform"`. Animation sources can come from model-bundled clips, Mixamo/FBX libraries, BVH motion capture, Blender-authored clips, or later private local animation packs. These assets should stay in gitignored local directories and should not be committed to a public repository.
