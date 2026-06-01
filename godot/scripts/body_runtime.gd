@@ -352,7 +352,12 @@ func _apply_real_model_action(action: String) -> void:
 		current_state["animation_length"] = animation_length
 		current_state["animation_wait_time"] = wait_time
 		current_state["pose"] = _pose_for_action(action)
-		await get_tree().create_timer(wait_time).timeout
+		if action == "wave" and real_body.has_method("play_procedural_wave"):
+			var wave_applied = await real_body.call("play_procedural_wave", wait_time)
+			if not bool(wave_applied):
+				await get_tree().create_timer(wait_time).timeout
+		else:
+			await get_tree().create_timer(wait_time).timeout
 		return
 	current_state["action_source"] = "profile_fallback"
 	current_state["animation_name"] = "none"
@@ -466,6 +471,8 @@ func _reset_body_pose() -> void:
 		right_arm.transform = right_arm_start_transform
 		left_leg.transform = left_leg_start_transform
 		right_leg.transform = right_leg_start_transform
+	elif real_body.has_method("reset_procedural_wave_pose"):
+		real_body.call("reset_procedural_wave_pose")
 
 
 func _wave() -> void:
@@ -665,7 +672,9 @@ func _capture_screenshot(id: String, errors: Array[String]) -> String:
 	if save_err != OK:
 		errors.append("screenshot_save_failed")
 		return ""
-	_rename_absolute(temp_abs, final_abs)
+	if not _replace_file_absolute(temp_abs, final_abs):
+		errors.append("screenshot_rename_failed")
+		return ""
 	return final_rel
 
 
@@ -682,9 +691,13 @@ func _write_state_atomic(id: String, ok: bool, screenshot_path: String, errors: 
 	var temp_abs := ProjectSettings.globalize_path("res://runtime/outbox/state.tmp.json")
 	var final_abs := ProjectSettings.globalize_path(OUTBOX_PATH)
 	var file := FileAccess.open(temp_abs, FileAccess.WRITE)
+	if file == null:
+		push_error("Failed to open state temp file for writing: %s" % temp_abs)
+		return
 	file.store_string(text)
 	file.close()
-	_rename_absolute(temp_abs, final_abs)
+	if not _replace_file_absolute(temp_abs, final_abs):
+		return
 	_append_log(response, command, normalized_intent)
 
 
@@ -726,12 +739,20 @@ func _ensure_runtime_dirs() -> void:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path))
 
 
-func _rename_absolute(from_path: String, to_path: String) -> void:
-	if FileAccess.file_exists(to_path):
-		DirAccess.remove_absolute(to_path)
-	var err := DirAccess.rename_absolute(from_path, to_path)
-	if err != OK:
-		push_error("Failed to rename %s to %s: %s" % [from_path, to_path, err])
+func _replace_file_absolute(from_path: String, to_path: String) -> bool:
+	var last_err := OK
+	for attempt in range(8):
+		if FileAccess.file_exists(to_path):
+			last_err = DirAccess.remove_absolute(to_path)
+			if last_err != OK:
+				OS.delay_msec(25 * (attempt + 1))
+				continue
+		last_err = DirAccess.rename_absolute(from_path, to_path)
+		if last_err == OK:
+			return true
+		OS.delay_msec(25 * (attempt + 1))
+	push_error("Failed to replace %s with %s: %s" % [to_path, from_path, last_err])
+	return false
 
 
 func _make_material(color: Color) -> StandardMaterial3D:

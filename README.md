@@ -87,7 +87,7 @@ D:\Software\Godot_v4.6-stable_mono_win64\Godot_v4.6-stable_mono_win64\Godot_v4.6
 
 ## Run the MVP Action Test
 
-The Python test can launch Godot headless, send commands through file polling, wait for matching state responses, and verify screenshots exist.
+The Python test can launch Godot, send commands through file polling, wait for matching state responses, and verify screenshots exist. By default it launches a rendered Godot window so screenshots contain the scene. Use `--headless-runtime` only for protocol-only checks, because headless mode produces fallback screenshots without the character.
 
 ```powershell
 python client\python\test_action.py --launch-runtime
@@ -253,4 +253,4 @@ godot/outputs/logs/bone_mapping_candidates.json
 
 The report includes the primary skeleton path, bone count, candidate bones per role, a sample of all bones, and diagnosis lines for roles with no match. `skeleton_debug.json` also includes `primary_skeleton_path` and `key_bone_candidates_summary`.
 
-The current `wave` fixture still rotates `ModelRoot:rotation_degrees`; it proves the Action Slot Animation Adapter path, but it is not skeletal arm motion. The next step is to use the `right_upper_arm`, `right_lower_arm`, and `right_hand` candidates as inputs for a procedural right-arm wave animation.
+The committed `wave` fixture still rotates `ModelRoot:rotation_degrees`; it proves the Action Slot Animation Adapter path, but it is not skeletal arm motion by itself. The runtime now adds a lightweight procedural right-arm wave overlay for `real_model` mode using the `right_upper_arm`, `right_lower_arm`, and `right_hand` candidates. This is not BVH retargeting; it is a first visible bone-pose control path for the imported skeleton.

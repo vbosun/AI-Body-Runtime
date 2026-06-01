@@ -184,9 +184,13 @@ EXPECT_ANIMATION_INTENTS = {
 }
 
 
-def launch_runtime(project_dir: Path, godot_exe: Path) -> subprocess.Popen[str]:
+def launch_runtime(project_dir: Path, godot_exe: Path, headless: bool = False) -> subprocess.Popen[str]:
+    command = [str(godot_exe)]
+    if headless:
+        command.append("--headless")
+    command.extend(["--path", str(project_dir)])
     return subprocess.Popen(
-        [str(godot_exe), "--headless", "--path", str(project_dir)],
+        command,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -279,6 +283,11 @@ def main() -> int:
     )
     parser.add_argument("--launch-runtime", action="store_true")
     parser.add_argument(
+        "--headless-runtime",
+        action="store_true",
+        help="Launch Godot with --headless. This is useful for protocol-only checks, but screenshots will be fallback images.",
+    )
+    parser.add_argument(
         "--expect-animation",
         choices=sorted(EXPECT_ANIMATION_INTENTS),
         default=None,
@@ -304,7 +313,7 @@ def main() -> int:
         if not godot_exe.exists():
             print(f"Godot executable not found: {godot_exe}", file=sys.stderr)
             return 2
-        process = launch_runtime(args.project_dir, godot_exe)
+        process = launch_runtime(args.project_dir, godot_exe, headless=args.headless_runtime)
         time.sleep(1.0)
 
     client = BodyClient(args.project_dir, timeout_seconds=args.timeout)

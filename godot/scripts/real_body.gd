@@ -78,6 +78,11 @@ const BONE_ROLE_KEYWORDS := {
 var model_root: Node3D
 var animation_player: AnimationPlayer
 var texture_cache := {}
+var procedural_wave_bone_indices := {
+	"right_upper_arm": -1,
+	"right_lower_arm": -1,
+	"right_hand": -1
+}
 
 
 func _ready() -> void:
@@ -198,6 +203,36 @@ func play_action_animation(action_name: String) -> Dictionary:
 	return info
 
 
+func play_procedural_wave(duration: float) -> bool:
+	var skeleton := get_primary_skeleton()
+	if skeleton == null:
+		return false
+	var bone_indices := _get_procedural_wave_bone_indices(skeleton)
+	if int(bone_indices["right_upper_arm"]) < 0 or int(bone_indices["right_lower_arm"]) < 0:
+		return false
+	var total_time = maxf(duration, 0.8)
+	var step_time := 0.08
+	var elapsed := 0.0
+	while elapsed < total_time:
+		var phase := sin((elapsed / total_time) * TAU * 4.0)
+		_apply_procedural_wave_pose(skeleton, bone_indices, phase)
+		await get_tree().create_timer(step_time).timeout
+		elapsed += step_time
+	_apply_procedural_wave_pose(skeleton, bone_indices, 0.75)
+	return true
+
+
+func reset_procedural_wave_pose() -> void:
+	var skeleton := get_primary_skeleton()
+	if skeleton == null:
+		return
+	var bone_indices := _get_procedural_wave_bone_indices(skeleton)
+	for role_name in bone_indices.keys():
+		var bone_index := int(bone_indices[role_name])
+		if bone_index >= 0:
+			skeleton.reset_bone_pose(bone_index)
+
+
 func _resolve_body_mode() -> String:
 	var env_mode := OS.get_environment("AI_BODY_RUNTIME_BODY_MODE")
 	if BODY_MODES.has(env_mode):
@@ -206,6 +241,47 @@ func _resolve_body_mode() -> String:
 	if BODY_MODES.has(configured_mode):
 		return configured_mode
 	return "placeholder"
+
+
+func _get_procedural_wave_bone_indices(skeleton: Skeleton3D) -> Dictionary:
+	if int(procedural_wave_bone_indices["right_upper_arm"]) < 0:
+		procedural_wave_bone_indices["right_upper_arm"] = _first_candidate_index(skeleton, "right_upper_arm")
+	if int(procedural_wave_bone_indices["right_lower_arm"]) < 0:
+		procedural_wave_bone_indices["right_lower_arm"] = _first_candidate_index(skeleton, "right_lower_arm")
+	if int(procedural_wave_bone_indices["right_hand"]) < 0:
+		procedural_wave_bone_indices["right_hand"] = _first_candidate_index(skeleton, "right_hand")
+	return procedural_wave_bone_indices
+
+
+func _first_candidate_index(skeleton: Skeleton3D, role_name: String) -> int:
+	var candidates := _find_bone_candidates_for_skeleton(skeleton, role_name)
+	if candidates.is_empty():
+		return -1
+	return int(candidates[0].get("index", -1))
+
+
+func _apply_procedural_wave_pose(skeleton: Skeleton3D, bone_indices: Dictionary, phase: float) -> void:
+	var upper_arm_index := int(bone_indices["right_upper_arm"])
+	var lower_arm_index := int(bone_indices["right_lower_arm"])
+	var hand_index := int(bone_indices["right_hand"])
+	_set_bone_pose_euler_degrees(skeleton, upper_arm_index, Vector3(0.0, 128.0, 0.0))
+	_set_bone_pose_euler_degrees(skeleton, lower_arm_index, Vector3(0.0, 74.0 + phase * 42.0, 0.0))
+	if hand_index >= 0:
+		_set_bone_pose_euler_degrees(skeleton, hand_index, Vector3(0.0, phase * 28.0, phase * 18.0))
+	skeleton.force_update_all_bone_transforms()
+
+
+func _set_bone_pose_euler_degrees(skeleton: Skeleton3D, bone_index: int, euler_degrees: Vector3) -> void:
+	if bone_index < 0:
+		return
+	var euler_radians := Vector3(
+		deg_to_rad(euler_degrees.x),
+		deg_to_rad(euler_degrees.y),
+		deg_to_rad(euler_degrees.z)
+	)
+	var pose := skeleton.get_bone_pose(bone_index)
+	pose.basis = Basis.from_euler(euler_radians)
+	skeleton.set_bone_pose(bone_index, pose)
 
 
 func _find_animation_player(node: Node) -> AnimationPlayer:

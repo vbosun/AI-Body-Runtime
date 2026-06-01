@@ -189,4 +189,4 @@ Use:
 python client\python\test_action.py --launch-runtime --expect-animation wave --dump-skeleton-debug --dump-bone-mapping
 ```
 
-The `wave` fixture currently targets `ModelRoot:rotation_degrees`, so it rotates the imported model root rather than the arm bones. After the right arm candidates are reviewed, the next step is a procedural wave that targets the selected right upper arm, lower arm, and hand bones.
+The `wave` fixture currently targets `ModelRoot:rotation_degrees`, so it rotates the imported model root rather than the arm bones. In `real_model` mode, the runtime layers a first procedural wave pose over that fixture by targeting the selected right upper arm, lower arm, and hand candidates. This keeps the Action Slot Animation Adapter intact while proving visible bone-pose control before any full retargeting work.
